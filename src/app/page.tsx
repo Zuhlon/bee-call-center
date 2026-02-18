@@ -106,6 +106,7 @@ export default function BeeCallCenter() {
   const [penaltyAnimation, setPenaltyAnimation] = useState(false)
   const [levelUpEffect, setLevelUpEffect] = useState(false)
   const [spiderVictimBanner, setSpiderVictimBanner] = useState(false)
+  const [gameOver, setGameOver] = useState(false)
   
   // Tutorial state
   const [showTutorial, setShowTutorial] = useState(false)
@@ -121,6 +122,45 @@ export default function BeeCallCenter() {
   const comboLoopRef = useRef<NodeJS.Timeout | null>(null)
 
   const freeOperators = operators - busyOperators.size
+
+  // Check for game over - no bees and no honey to hire
+  useEffect(() => {
+    if (operators === 0 && balance < 1 && !showTutorial) {
+      setGameOver(true)
+    }
+  }, [operators, balance, showTutorial])
+
+  // Restart game
+  const restartGame = () => {
+    setBalance(5)
+    setOperators(3)
+    setClientQueue([])
+    setHornetActive(false)
+    setHornetDuration(0)
+    setLastCaptured(0)
+    setCombo(0)
+    setComboTimer(0)
+    setLevel(1)
+    setXp(0)
+    setXpToNext(10)
+    setGameSpeed(1)
+    setActiveBonuses([])
+    setHasShield(false)
+    setShieldTimer(0)
+    setParticles([])
+    setBusyOperators(new Set())
+    setTotalCreditsEarned(0)
+    setTotalCallsAnswered(0)
+    setAchievements([
+      { id: 'first3', name: 'Первые шаги', description: '3 мёда', icon: '🥈', unlocked: false },
+      { id: 'first10', name: 'Медовый мастер', description: '10 мёда', icon: '💎', unlocked: false },
+      { id: 'combo5', name: 'Комбо-мастер', description: 'Комбо x5', icon: '🔥', unlocked: false },
+      { id: 'level5', name: 'Профи', description: 'Уровень 5', icon: '⭐', unlocked: false },
+    ])
+    setGameOver(false)
+    setLevelUpEffect(false)
+    setSpiderVictimBanner(false)
+  }
 
   // Check if first launch - show tutorial
   useEffect(() => {
@@ -768,6 +808,91 @@ export default function BeeCallCenter() {
             </div>
             <div style={{ fontSize: '28px', fontWeight: 700, color: '#ef4444' }}>
               -10 мёда
+            </div>
+          </div>
+        )}
+        
+        {/* Game Over screen */}
+        {gameOver && (
+          <div style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 300,
+            padding: '20px',
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #78350f, #451a03)',
+              borderRadius: '32px',
+              padding: '40px 32px',
+              maxWidth: '340px',
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 80px rgba(251, 191, 36, 0.2)',
+              border: '4px solid #fbbf24',
+            }}>
+              <div style={{ fontSize: '80px', marginBottom: '20px' }}>😢🐝</div>
+              
+              <h2 className="graffiti-text" style={{
+                fontSize: '24px',
+                color: '#fbbf24',
+                marginBottom: '16px',
+                lineHeight: 1.3,
+              }}>
+                Пчёлы дотанцевались до упаду
+              </h2>
+              
+              <p style={{
+                fontSize: '16px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                marginBottom: '24px',
+                lineHeight: 1.5,
+              }}>
+                Попробуйте ещё раз — постройте свою империю мёда и пчёл!
+              </p>
+              
+              <div style={{
+                background: 'rgba(0,0,0,0.3)',
+                borderRadius: '16px',
+                padding: '16px',
+                marginBottom: '24px',
+              }}>
+                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>
+                  Ваш результат:
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                  <div>
+                    <div style={{ fontSize: '28px' }}>🍯</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700 }}>{totalCreditsEarned.toFixed(1)}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '28px' }}>⭐</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700 }}>{level}</div>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '28px' }}>📞</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700 }}>{totalCallsAnswered}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                onClick={restartGame}
+                className="touch-button"
+                style={{
+                  padding: '16px 40px',
+                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                  border: 'none',
+                  borderRadius: '20px',
+                  color: '#1f2937',
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 20px rgba(251, 191, 36, 0.5)',
+                }}
+              >
+                🔄 Начать заново
+              </button>
             </div>
           </div>
         )}
