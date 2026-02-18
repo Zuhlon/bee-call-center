@@ -116,7 +116,7 @@ export default function BeeCallCenter() {
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null)
   const hornetLoopRef = useRef<NodeJS.Timeout | null>(null)
   const hornetScheduleRef = useRef<NodeJS.Timeout | null>(null)
-  const clientTimersRef = useRef<Map<number, NodeJS.Timeout>>(new Map())
+  const clientTickRef = useRef<NodeJS.Timeout | null>(null)
   const comboLoopRef = useRef<NodeJS.Timeout | null>(null)
 
   const freeOperators = operators - busyOperators.size
@@ -332,6 +332,42 @@ export default function BeeCallCenter() {
     }
   }, [totalCreditsEarned, highScore])
 
+  // Global client timer - updates all clients every 100ms
+  useEffect(() => {
+    clientTickRef.current = setInterval(() => {
+      setClientQueue(prev => {
+        if (prev.length === 0) return prev
+        
+        const now = Date.now()
+        let hasExpired = false
+        let penalty = 0
+        
+        const updated = prev.map(client => {
+          const newTimeLeft = client.timeLeft - 0.1
+          if (newTimeLeft <= 0) {
+            hasExpired = true
+            penalty += 0.1
+            return null
+          }
+          return { ...client, timeLeft: newTimeLeft }
+        }).filter(Boolean) as Client[]
+        
+        if (hasExpired) {
+          setBalance(b => Math.max(0, b - penalty))
+          setPenaltyAnimation(true)
+          setCombo(0)
+          setTimeout(() => setPenaltyAnimation(false), 500)
+        }
+        
+        return updated
+      })
+    }, 100)
+    
+    return () => {
+      if (clientTickRef.current) clearInterval(clientTickRef.current)
+    }
+  }, [])
+
   // Spawn client
   const spawnClient = useCallback(() => {
     const newClientId = ++clientIdRef.current
@@ -349,42 +385,6 @@ export default function BeeCallCenter() {
     setClientQueue(prev => [...prev, newClient])
     setNewClientAnimation(newClientId)
     setTimeout(() => setNewClientAnimation(null), 500)
-    
-    const timer = setInterval(() => {
-      setClientQueue(prev => {
-        const clientIndex = prev.findIndex(c => c.id === newClientId)
-        
-        // Client was removed (answered or already timed out)
-        if (clientIndex === -1) {
-          clearInterval(timer)
-          clientTimersRef.current.delete(newClientId)
-          return prev
-        }
-        
-        const client = prev[clientIndex]
-        const newTimeLeft = client.timeLeft - 0.1
-        
-        if (newTimeLeft <= 0) {
-          clearInterval(timer)
-          clientTimersRef.current.delete(newClientId)
-          setBalance(b => Math.max(0, b - 0.1))
-          setPenaltyAnimation(true)
-          setCombo(0)
-          setTimeout(() => {
-            setPenaltyAnimation(false)
-          }, 500)
-          return prev.filter(c => c.id !== newClientId)
-        }
-        
-        // Immutable update - create new object
-        const updatedClient = { ...client, timeLeft: newTimeLeft }
-        const newQueue = [...prev]
-        newQueue[clientIndex] = updatedClient
-        return newQueue
-      })
-    }, 100)
-    
-    clientTimersRef.current.set(newClientId, timer)
   }, [gameSpeed])
 
   // Spawn bonus
@@ -602,13 +602,6 @@ export default function BeeCallCenter() {
       if (prev.length === 0) return prev
       
       const client = prev[0]
-      
-      // Stop the timer for this client
-      const timer = clientTimersRef.current.get(client.id)
-      if (timer) {
-        clearInterval(timer)
-        clientTimersRef.current.delete(client.id)
-      }
       
       // Process the call outside of state update
       setTimeout(() => processAnsweredCall(client, freeOpIndex), 0)
