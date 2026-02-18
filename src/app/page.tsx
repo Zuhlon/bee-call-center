@@ -352,22 +352,35 @@ export default function BeeCallCenter() {
     
     const timer = setInterval(() => {
       setClientQueue(prev => {
-        const client = prev.find(c => c.id === newClientId)
-        if (client) {
-          client.timeLeft -= 0.1
-          if (client.timeLeft <= 0) {
-            clearInterval(timer)
-            clientTimersRef.current.delete(newClientId)
-            setBalance(b => Math.max(0, b - 0.1))
-            setPenaltyAnimation(true)
-            setCombo(0)
-            setTimeout(() => {
-              setPenaltyAnimation(false)
-            }, 500)
-            return prev.filter(c => c.id !== newClientId)
-          }
+        const clientIndex = prev.findIndex(c => c.id === newClientId)
+        
+        // Client was removed (answered or already timed out)
+        if (clientIndex === -1) {
+          clearInterval(timer)
+          clientTimersRef.current.delete(newClientId)
+          return prev
         }
-        return [...prev]
+        
+        const client = prev[clientIndex]
+        const newTimeLeft = client.timeLeft - 0.1
+        
+        if (newTimeLeft <= 0) {
+          clearInterval(timer)
+          clientTimersRef.current.delete(newClientId)
+          setBalance(b => Math.max(0, b - 0.1))
+          setPenaltyAnimation(true)
+          setCombo(0)
+          setTimeout(() => {
+            setPenaltyAnimation(false)
+          }, 500)
+          return prev.filter(c => c.id !== newClientId)
+        }
+        
+        // Immutable update - create new object
+        const updatedClient = { ...client, timeLeft: newTimeLeft }
+        const newQueue = [...prev]
+        newQueue[clientIndex] = updatedClient
+        return newQueue
       })
     }, 100)
     
@@ -515,29 +528,9 @@ export default function BeeCallCenter() {
     }
   }, [balance, operators, maxOperators, spawnParticles, addXp])
 
-  // Answer call
-  const answerCall = useCallback(() => {
-    if (freeOperators <= 0 || clientQueue.length === 0) return
-    
-    let freeOpIndex = -1
-    for (let i = 0; i < operators; i++) {
-      if (!busyOperators.has(i)) {
-        freeOpIndex = i
-        break
-      }
-    }
-    if (freeOpIndex === -1) return
-    
-    const client = clientQueue[0]
-    
-    const timer = clientTimersRef.current.get(client.id)
-    if (timer) {
-      clearInterval(timer)
-      clientTimersRef.current.delete(client.id)
-    }
-    
+  // Process answered call (separated to avoid state update issues)
+  const processAnsweredCall = useCallback((client: Client, freeOpIndex: number) => {
     setAnswerAnimation(true)
-    setClientQueue(prev => prev.slice(1))
     
     // Check for toxic spider call
     if (client.isToxic) {
@@ -555,7 +548,21 @@ export default function BeeCallCenter() {
     }
     
     // Combo!
-    setCombo(prev => prev + 1)
+    setCombo(prev => {
+      const newCombo = prev + 1
+      // Calculate earning with combo bonus
+      let earning = 1.0
+      if (hornetActive && Math.random() < 0.4) earning = 0.5
+      earning *= (1 + newCombo * 0.1) // Combo bonus
+      
+      setBalance(b => Math.round((b + earning) * 10) / 10)
+      setTotalCreditsEarned(total => {
+        checkAchievements()
+        return total + earning
+      })
+      
+      return newCombo
+    })
     setComboTimer(3)
     
     setBusyOperators(prev => new Set([...prev, freeOpIndex]))
@@ -567,27 +574,48 @@ export default function BeeCallCenter() {
       })
     }, 3000)
     
-    // Calculate earning with combo bonus
-    let earning = 1.0
-    if (hornetActive && Math.random() < 0.4) earning = 0.5
-    earning *= (1 + combo * 0.1) // Combo bonus
-    
-    setBalance(prev => Math.round((prev + earning) * 10) / 10)
-    setTotalCreditsEarned(prev => {
-      const newTotal = prev + earning
-      checkAchievements()
-      return newTotal
-    })
     setTotalCallsAnswered(prev => prev + 1)
     
     // Effects
     spawnParticles(70, 50, '🍯', 3)
-    // Visual feedback for success
     
     addXp(2)
     
     setTimeout(() => setAnswerAnimation(false), 200)
-  }, [freeOperators, clientQueue, operators, busyOperators, hornetActive, combo, spawnParticles, addXp, checkAchievements])
+  }, [hornetActive, spawnParticles, addXp, checkAchievements])
+
+  // Answer call
+  const answerCall = useCallback(() => {
+    if (freeOperators <= 0) return
+    
+    let freeOpIndex = -1
+    for (let i = 0; i < operators; i++) {
+      if (!busyOperators.has(i)) {
+        freeOpIndex = i
+        break
+      }
+    }
+    if (freeOpIndex === -1) return
+    
+    // Use functional update to get the actual first client
+    setClientQueue(prev => {
+      if (prev.length === 0) return prev
+      
+      const client = prev[0]
+      
+      // Stop the timer for this client
+      const timer = clientTimersRef.current.get(client.id)
+      if (timer) {
+        clearInterval(timer)
+        clientTimersRef.current.delete(client.id)
+      }
+      
+      // Process the call outside of state update
+      setTimeout(() => processAnsweredCall(client, freeOpIndex), 0)
+      
+      return prev.slice(1)
+    })
+  }, [freeOperators, operators, busyOperators, processAnsweredCall])
 
   return (
     <>
