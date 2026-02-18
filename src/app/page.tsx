@@ -339,7 +339,7 @@ export default function BeeCallCenter() {
     const newClient: Client = {
       id: newClientId,
       type: isToxicCall ? SPIDER_CLIENT : CLIENT_TYPES[Math.floor(Math.random() * CLIENT_TYPES.length)],
-      timeLeft: Math.max(1.2, 2.5 - (gameSpeed - 1) * 0.4), // Faster for arcade feel
+      timeLeft: Math.max(1.5, 3 - (gameSpeed - 1) * 0.3), // 3 seconds at start, min 1.5s
       isToxic: isToxicCall,
     }
     
@@ -1153,7 +1153,7 @@ export default function BeeCallCenter() {
             border: '3px solid rgba(255, 255, 255, 0.3)',
           }}>
             <h2 className="graffiti-text" style={{ fontSize: '14px', marginBottom: '10px' }}>
-              📨 Входящие <span style={{ opacity: 0.6 }}>⏱️ {Math.max(1.5, 3 - (gameSpeed - 1) * 0.5).toFixed(1)}с</span>
+              📨 Входящие <span style={{ opacity: 0.6 }}>⏱️ {Math.max(1.5, 3 - (gameSpeed - 1) * 0.3).toFixed(1)}с</span>
             </h2>
             
             <div className="custom-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', minHeight: '50px' }}>
