@@ -856,18 +856,27 @@ export default function BeeCallCenter() {
               {/* Icon/Character */}
               {isLegend ? (
                 <div style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '80px', filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.8))' }}>🏆</div>
-                  <div style={{ fontSize: '40px', marginTop: '-20px' }}>💎</div>
+                  <img 
+                    src="/trophy_gold.png" 
+                    alt="Золотой кубок" 
+                    style={{ width: '120px', height: '120px', objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.8))' }} 
+                  />
                 </div>
               ) : isWizard ? (
                 <div style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '80px', filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.8))' }}>🏆</div>
-                  <div style={{ fontSize: '36px', marginTop: '-15px' }}>💚</div>
+                  <img 
+                    src="/trophy_silver.png" 
+                    alt="Серебряный кубок" 
+                    style={{ width: '120px', height: '120px', objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.8))' }} 
+                  />
                 </div>
               ) : (
                 <div style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '80px' }}>🐝</div>
-                  <div style={{ fontSize: '32px', marginTop: '-10px' }}>🐱</div>
+                  <img 
+                    src="/bee_kitty.png" 
+                    alt="Пчела-котик" 
+                    style={{ width: '140px', height: '140px', objectFit: 'contain' }} 
+                  />
                 </div>
               )}
               
