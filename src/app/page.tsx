@@ -839,8 +839,8 @@ export default function BeeCallCenter() {
         
         {/* Game Over screen */}
         {gameOver && (() => {
-          const isLegend = level > 20
-          const isWizard = level > 10
+          const isLegend = level >= 15
+          const isWizard = level >= 5
           
           return (
           <div style={{
