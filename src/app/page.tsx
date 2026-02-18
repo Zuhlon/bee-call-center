@@ -79,7 +79,6 @@ export default function BeeCallCenter() {
   
   // Effects
   const [particles, setParticles] = useState<Particle[]>([])
-  const [screenShake, setScreenShake] = useState(false)
   
   // Busy operators
   const [busyOperators, setBusyOperators] = useState<Set<number>>(new Set())
@@ -361,11 +360,9 @@ export default function BeeCallCenter() {
             clientTimersRef.current.delete(newClientId)
             setBalance(b => Math.max(0, b - 0.1))
             setPenaltyAnimation(true)
-            setCombo(0) // Reset combo on miss
-            setScreenShake(true)
+            setCombo(0)
             setTimeout(() => {
               setPenaltyAnimation(false)
-              setScreenShake(false)
             }, 500)
             return prev.filter(c => c.id !== newClientId)
           }
@@ -435,7 +432,6 @@ export default function BeeCallCenter() {
     
     setHornetActive(true)
     setHornetDuration(8)
-    setScreenShake(true)
     
     // Capture 2-10 operators (they disappear from hive completely)
     const captureAmount = Math.min(operators, Math.floor(Math.random() * 9) + 2) // Random 2-10, capped by available
@@ -447,7 +443,7 @@ export default function BeeCallCenter() {
     spawnParticles(50, 50, '💨', 5)
     
     setTimeout(() => {
-      setScreenShake(false)
+      // Hornet alert ends
     }, 500)
     
     // Hornet stays for 8 seconds showing the alert
@@ -548,12 +544,10 @@ export default function BeeCallCenter() {
       // Toxic call - lose 10 credits and show banner!
       setBalance(prev => Math.max(0, prev - 10))
       setCombo(0) // Reset combo
-      setScreenShake(true)
       setSpiderVictimBanner(true)
       spawnParticles(50, 50, '🕷️', 15)
       spawnParticles(50, 50, '💀', 10)
       setTimeout(() => {
-        setScreenShake(false)
         setAnswerAnimation(false)
         setSpiderVictimBanner(false)
       }, 2500)
@@ -598,62 +592,36 @@ export default function BeeCallCenter() {
   return (
     <>
       <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(-2deg); }
-          50% { transform: translateY(-4px) rotate(2deg); }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translateX(0) rotate(0deg); }
-          25% { transform: translateX(-3px) rotate(-2deg); }
-          75% { transform: translateX(3px) rotate(2deg); }
-        }
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); }
-        }
         @keyframes slideIn {
-          0% { transform: translateX(50px) scale(0.8); opacity: 0; }
-          100% { transform: translateX(0) scale(1); opacity: 1; }
+          0% { transform: translateX(30px); opacity: 0; }
+          100% { transform: translateX(0); opacity: 1; }
         }
         @keyframes levelUp {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); filter: brightness(1.3); }
-        }
-        @keyframes particleFly {
-          0% { opacity: 1; transform: translate(0, 0) scale(1); }
-          100% { opacity: 0; transform: translate(var(--vx), var(--vy)) scale(0); }
-        }
-        @keyframes comboPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.2); }
+          50% { transform: scale(1.05); }
         }
         @keyframes bonusFloat {
-          0%, 100% { transform: translateY(0) scale(1); }
-          50% { transform: translateY(-10px) scale(1.1); }
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
         }
         
-        .bee-float { animation: float 1.5s ease-in-out infinite; }
-        .hornet-shake { animation: shake 0.3s ease-in-out infinite; }
-        .slide-in { animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .level-up { animation: levelUp 0.5s ease-in-out; }
-        .combo-pulse { animation: comboPulse 0.5s ease-in-out infinite; }
-        .bonus-float { animation: bonusFloat 1s ease-in-out infinite; cursor: pointer; }
+        .slide-in { animation: slideIn 0.25s ease-out; }
+        .level-up { animation: levelUp 0.4s ease-in-out; }
+        .bonus-float { animation: bonusFloat 2s ease-in-out infinite; cursor: pointer; }
         
         .hex-cell {
           clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         }
         
         .custom-scrollbar::-webkit-scrollbar { height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(92, 74, 50, 0.1); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #f5c842, #e0a830); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #8a7a62; border-radius: 10px; }
         
         .touch-button {
           -webkit-tap-highlight-color: transparent;
           touch-action: manipulation;
           user-select: none;
         }
-        
-        .touch-button:active { transform: scale(0.95); }
         
         .safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
         .safe-top { padding-top: max(12px, env(safe-area-inset-top)); }
@@ -663,10 +631,6 @@ export default function BeeCallCenter() {
           font-weight: 900;
           letter-spacing: 1px;
           text-transform: uppercase;
-        }
-        
-        .screen-shake {
-          animation: shake 0.1s ease-in-out;
         }
         
         /* Neumorphism styles */
@@ -716,7 +680,7 @@ export default function BeeCallCenter() {
         }
         
         .neu-hex-busy {
-          background: linear-gradient(145deg, #5bc0de, #46b8da);
+          background: linear-gradient(145deg, #6b6b6b, #555555);
           box-shadow: 4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc;
         }
         
@@ -727,7 +691,7 @@ export default function BeeCallCenter() {
       `}</style>
       
       {/* Main container */}
-      <div className={`${screenShake ? 'screen-shake' : ''}`} style={{
+      <div style={{
         minHeight: '100dvh',
         background: '#dcd0b8',
         color: '#5c4a32',
@@ -902,7 +866,7 @@ export default function BeeCallCenter() {
               {/* Title */}
               <h2 className="graffiti-text" style={{
                 fontSize: '22px',
-                color: isLegend ? '#d4a820' : isWizard ? '#5bc0de' : '#e0a830',
+                color: isLegend ? '#d4a820' : isWizard ? '#6b6b6b' : '#e0a830',
                 marginBottom: '16px',
                 lineHeight: 1.3,
               }}>
@@ -1151,7 +1115,7 @@ export default function BeeCallCenter() {
               </div>
               
               <div style={{
-                background: 'linear-gradient(145deg, #5bc0de, #46b8da)',
+                background: 'linear-gradient(145deg, #6b6b6b, #555555)',
                 padding: '6px 12px', borderRadius: '14px',
                 display: 'flex', alignItems: 'center', gap: '4px',
                 boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
@@ -1166,7 +1130,7 @@ export default function BeeCallCenter() {
           
           {/* Combo indicator */}
           {combo > 1 && (
-            <div className="combo-pulse" style={{
+            <div style={{
               position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
               background: 'linear-gradient(145deg, #f5a623, #e08e1b)',
               padding: '4px 16px', borderRadius: '12px',
@@ -1181,7 +1145,7 @@ export default function BeeCallCenter() {
           {hasShield && (
             <div style={{
               position: 'absolute', top: '100%', right: '16px',
-              background: 'linear-gradient(145deg, #5bc0de, #46b8da)',
+              background: 'linear-gradient(145deg, #6b6b6b, #555555)',
               padding: '4px 12px', borderRadius: '12px',
               fontSize: '13px', fontWeight: 600, marginTop: '4px', color: '#fff',
               display: 'flex', alignItems: 'center', gap: '6px',
@@ -1224,11 +1188,11 @@ export default function BeeCallCenter() {
               {[...Array(operators)].map((_, i) => {
                 const isBusy = busyOperators.has(i)
                 return (
-                  <div key={i} className={`hex-cell ${isBusy ? '' : 'bee-float'}`} style={{
+                  <div key={i} className="hex-cell" style={{
                     width: '38px', height: '42px',
                     background: isBusy 
-                      ? 'linear-gradient(145deg, #5bc0de, #46b8da)' 
-                      : 'linear-gradient(145deg, #f5d456, #e0b835)',
+                      ? 'linear-gradient(145deg, #6b6b6b, #555555)' 
+                      : 'linear-gradient(145deg, #f5c842, #e0a830)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '18px',
                     boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
@@ -1278,7 +1242,7 @@ export default function BeeCallCenter() {
                   const isUrgent = client.timeLeft <= 1
                   
                   return (
-                    <div key={client.id} className={`slide-in ${isUrgent ? 'hornet-shake' : ''}`} style={{
+                    <div key={client.id} className="slide-in" style={{
                       flexShrink: 0, padding: '8px 12px',
                       background: isToxic 
                         ? 'linear-gradient(145deg, #9d8bc4, #8a7ab2)'
@@ -1286,7 +1250,7 @@ export default function BeeCallCenter() {
                           ? 'linear-gradient(145deg, #d9534f, #c9302c)'
                           : client.timeLeft <= 2 
                             ? 'linear-gradient(145deg, #f5a623, #e08e1b)' 
-                            : 'linear-gradient(145deg, #5cb85c, #4cae4c)',
+                            : 'linear-gradient(145deg, #43A047, #2E7D32)',
                       borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '6px',
                       boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
                     }}>
@@ -1309,7 +1273,7 @@ export default function BeeCallCenter() {
           
           {/* Hornet alert */}
           {hornetActive && (
-            <section className="hornet-shake" style={{
+            <section style={{
               background: 'linear-gradient(145deg, #d9534f, #c9302c)',
               borderRadius: '24px', padding: '12px 16px',
               display: 'flex', alignItems: 'center', gap: '12px',
@@ -1422,7 +1386,7 @@ export default function BeeCallCenter() {
               className="touch-button" style={{
                 minHeight: '68px', padding: '10px',
                 background: freeOperators > 0 && clientQueue.length > 0
-                  ? 'linear-gradient(145deg, #5cb85c, #4cae4c)'
+                  ? 'linear-gradient(145deg, #43A047, #2E7D32)'
                   : 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
                 border: 'none',
                 borderRadius: '20px',
