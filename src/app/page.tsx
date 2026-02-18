@@ -501,7 +501,6 @@ export default function BeeCallCenter() {
 
     return () => {
       if (gameLoopRef.current) clearInterval(gameLoopRef.current)
-      clientTimersRef.current.forEach(timer => clearInterval(timer))
     }
   }, [spawnClient, spawnBonus, gameSpeed])
   
@@ -618,6 +617,7 @@ export default function BeeCallCenter() {
   return (
     <>
       <style jsx global>{`
+        /* Animations */
         @keyframes slideIn {
           0% { transform: translateX(30px); opacity: 0; }
           100% { transform: translateX(0); opacity: 1; }
@@ -627,30 +627,64 @@ export default function BeeCallCenter() {
           50% { transform: scale(1.05); }
         }
         @keyframes bonusFloat {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          50% { transform: translateY(-8px) rotate(5deg); }
+        }
+        @keyframes honeyDrip {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-6px); }
+          50% { transform: translateY(3px); }
         }
-        @keyframes honeyGlow {
-          0%, 100% { filter: brightness(1); }
-          50% { filter: brightness(1.1); }
+        @keyframes beeWiggle {
+          0%, 100% { transform: rotate(-3deg); }
+          50% { transform: rotate(3deg); }
         }
-        @keyframes drip {
-          0% { transform: translateY(-5px); }
-          50% { transform: translateY(0); }
-          100% { transform: translateY(-5px); }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+        }
+        @keyframes glow {
+          0%, 100% { filter: brightness(1) drop-shadow(0 0 2px rgba(255, 224, 130, 0.5)); }
+          50% { filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 224, 130, 0.8)); }
+        }
+        @keyframes particleFly {
+          0% { transform: translate(0, 0) scale(1); opacity: 1; }
+          100% { transform: translate(var(--vx), var(--vy)) scale(0.5); opacity: 0; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+        @keyframes woodGrain {
+          0% { background-position: 0 0; }
+          100% { background-position: 100px 100px; }
         }
         
         .slide-in { animation: slideIn 0.25s ease-out; }
         .level-up { animation: levelUp 0.4s ease-in-out; }
         .bonus-float { animation: bonusFloat 2s ease-in-out infinite; cursor: pointer; }
+        .honey-drip { animation: honeyDrip 1.5s ease-in-out infinite; }
+        .bee-wiggle { animation: beeWiggle 0.3s ease-in-out infinite; }
+        .pulse { animation: pulse 1s ease-in-out infinite; }
+        .glow { animation: glow 2s ease-in-out infinite; }
         
+        /* Hexagonal clip path */
         .hex-cell {
           clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         }
         
-        .custom-scrollbar::-webkit-scrollbar { height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(101, 67, 33, 0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(180deg, #F5A623, #D4820F); border-radius: 10px; }
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { height: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { 
+          background: linear-gradient(180deg, #2D1F14 0%, #3D2914 50%, #2D1F14 100%);
+          border-radius: 10px;
+          box-shadow: inset 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb { 
+          background: linear-gradient(180deg, #FFE082 0%, #F5A623 50%, #D4820F 100%);
+          border-radius: 10px;
+          box-shadow: inset 1px 1px 2px rgba(255,255,255,0.4), 2px 2px 4px rgba(0,0,0,0.3);
+          border: 1px solid #B8860B;
+        }
         
         .touch-button {
           -webkit-tap-highlight-color: transparent;
@@ -667,121 +701,440 @@ export default function BeeCallCenter() {
           letter-spacing: 1px;
           text-transform: uppercase;
         }
-        
-        /* Skeuomorphic Bee Hive Styles */
-        
-        /* Honeycomb cell - raised 3D hexagon */
-        .honeycomb-cell {
-          background: linear-gradient(145deg, #FFD54F 0%, #F5A623 30%, #D4820F 70%, #A67B5B 100%);
+
+        /* ═══════════════════════════════════════════════════════════════
+           SKEUOMORPHIC BEEHIVE DESIGN SYSTEM
+           ═══════════════════════════════════════════════════════════════ */
+
+        /* Realistic Wood Panel */
+        .wood-panel {
+          background: 
+            repeating-linear-gradient(
+              90deg,
+              transparent 0px,
+              rgba(0,0,0,0.03) 1px,
+              transparent 2px,
+              transparent 20px
+            ),
+            repeating-linear-gradient(
+              0deg,
+              transparent 0px,
+              rgba(255,255,255,0.02) 1px,
+              transparent 2px,
+              transparent 30px
+            ),
+            linear-gradient(180deg, 
+              #5D4037 0%, 
+              #4E342E 15%,
+              #3E2723 30%,
+              #4A3728 50%,
+              #3D2914 70%,
+              #4E342E 85%,
+              #3E2723 100%
+            );
           box-shadow: 
-            inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.3),
+            inset 2px 0 4px rgba(0, 0, 0, 0.2),
+            inset -2px 0 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Realistic Wax Panel with texture */
+        .wax-panel-real {
+          background: 
+            repeating-radial-gradient(
+              circle at 20% 30%,
+              transparent 0px,
+              rgba(255,255,255,0.03) 1px,
+              transparent 2px,
+              transparent 8px
+            ),
+            repeating-radial-gradient(
+              circle at 80% 70%,
+              transparent 0px,
+              rgba(0,0,0,0.02) 1px,
+              transparent 2px,
+              transparent 6px
+            ),
+            linear-gradient(165deg, 
+              #FFE082 0%, 
+              #E8C872 15%,
+              #D4A84B 30%,
+              #C49A3D 50%,
+              #B8860B 70%,
+              #A67B5B 85%,
+              #8B6914 100%
+            );
+          box-shadow: 
+            inset 2px 2px 4px rgba(255, 255, 255, 0.5),
             inset -2px -2px 4px rgba(0, 0, 0, 0.2),
-            3px 3px 6px rgba(0, 0, 0, 0.3),
-            -1px -1px 3px rgba(255, 255, 255, 0.1);
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            4px 4px 12px rgba(0, 0, 0, 0.5),
+            -2px -2px 8px rgba(255, 213, 79, 0.15);
+          border: 3px solid #8B6914;
+          border-top-color: #B8860B;
+          border-left-color: #A67B5B;
         }
-        
-        /* Honeycomb cell - empty/deep */
-        .honeycomb-empty {
-          background: linear-gradient(145deg, #654321 0%, #4A3728 50%, #3D2914 100%);
+
+        /* 3D Honeycomb Cell - Free/Bee */
+        .honeycomb-free {
+          background: 
+            radial-gradient(ellipse at 30% 25%, rgba(255,255,255,0.4) 0%, transparent 30%),
+            radial-gradient(ellipse at 70% 75%, rgba(0,0,0,0.2) 0%, transparent 30%),
+            linear-gradient(180deg, 
+              #FFE082 0%, 
+              #FFD54F 20%,
+              #F5A623 40%,
+              #E6A800 60%,
+              #D4820F 80%,
+              #A67B5B 100%
+            );
           box-shadow: 
-            inset 3px 3px 6px rgba(0, 0, 0, 0.5),
-            inset -1px -1px 3px rgba(139, 105, 20, 0.3),
-            2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Honeycomb cell - busy */
-        .honeycomb-busy {
-          background: linear-gradient(145deg, #8B6914 0%, #6B5A10 50%, #4A3F0A 100%);
-          box-shadow: 
-            inset 2px 2px 4px rgba(139, 105, 20, 0.5),
-            inset -2px -2px 4px rgba(0, 0, 0, 0.4),
-            2px 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* Wax panel - main cards */
-        .wax-panel {
-          background: linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%);
-          box-shadow: 
-            inset 1px 1px 2px rgba(255, 255, 255, 0.3),
-            inset -1px -1px 2px rgba(0, 0, 0, 0.2),
-            4px 4px 8px rgba(0, 0, 0, 0.4),
-            -2px -2px 4px rgba(255, 213, 79, 0.2);
-          border: 2px solid #8B6914;
-        }
-        
-        /* Honey button */
-        .honey-button {
-          background: linear-gradient(180deg, #FFE082 0%, #FFD54F 20%, #FFC107 50%, #F5A623 80%, #D4820F 100%);
-          box-shadow: 
-            inset 0 2px 4px rgba(255, 255, 255, 0.5),
-            inset 0 -2px 4px rgba(0, 0, 0, 0.2),
-            0 4px 8px rgba(0, 0, 0, 0.3),
-            0 1px 0 rgba(255, 255, 255, 0.4);
+            inset 2px 2px 6px rgba(255, 255, 255, 0.6),
+            inset -2px -2px 4px rgba(0, 0, 0, 0.25),
+            inset 0 -4px 8px rgba(180, 130, 50, 0.3),
+            3px 4px 8px rgba(0, 0, 0, 0.4),
+            -1px -1px 3px rgba(255, 224, 130, 0.3);
           border: 2px solid #B8860B;
-          text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        /* 3D Honeycomb Cell - Busy */
+        .honeycomb-busy {
+          background: 
+            radial-gradient(ellipse at 30% 25%, rgba(255,255,255,0.2) 0%, transparent 30%),
+            linear-gradient(180deg, 
+              #8D6E63 0%, 
+              #6D4C41 30%,
+              #5D4037 50%,
+              #4E342E 70%,
+              #3E2723 100%
+            );
+          box-shadow: 
+            inset 2px 2px 4px rgba(255, 255, 255, 0.15),
+            inset -2px -2px 4px rgba(0, 0, 0, 0.4),
+            inset 0 2px 6px rgba(0, 0, 0, 0.3),
+            3px 4px 6px rgba(0, 0, 0, 0.35);
+          border: 2px solid #3E2723;
+        }
+
+        /* 3D Honeycomb Cell - Empty/Deep */
+        .honeycomb-empty {
+          background: 
+            radial-gradient(ellipse at 50% 50%, #1A0F08 0%, transparent 70%),
+            linear-gradient(180deg, 
+              #4A3728 0%, 
+              #3D2914 30%,
+              #2D1F14 60%,
+              #1A0F08 100%
+            );
+          box-shadow: 
+            inset 4px 4px 8px rgba(0, 0, 0, 0.7),
+            inset -2px -2px 4px rgba(62, 41, 20, 0.3),
+            inset 0 4px 12px rgba(0, 0, 0, 0.5),
+            2px 2px 4px rgba(0, 0, 0, 0.3);
+          border: 2px solid #5D4037;
+        }
+
+        /* Honey Drop - 3D blob */
+        .honey-drop-real {
+          background: 
+            radial-gradient(ellipse at 35% 30%, rgba(255,255,255,0.7) 0%, transparent 25%),
+            radial-gradient(ellipse at 50% 50%, rgba(255,224,130,0.3) 0%, transparent 50%),
+            radial-gradient(ellipse at 65% 70%, rgba(0,0,0,0.2) 0%, transparent 40%),
+            radial-gradient(ellipse at 50% 40%, #FFE082 0%, #FFD54F 30%, #F5A623 50%, #D4820F 70%, #A67B5B 100%);
+          box-shadow: 
+            inset 3px 3px 8px rgba(255, 255, 255, 0.6),
+            inset -2px -2px 6px rgba(0, 0, 0, 0.2),
+            0 6px 12px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(245, 166, 35, 0.4),
+            0 0 40px rgba(255, 213, 79, 0.2);
+        }
+
+        /* Wax Button - 3D pressed effect */
+        .wax-button-real {
+          background: 
+            linear-gradient(180deg, 
+              #FFE082 0%, 
+              #FFD54F 10%,
+              #F5A623 25%,
+              #E6A800 45%,
+              #D4820F 65%,
+              #F5A623 85%,
+              #FFD54F 100%
+            );
+          box-shadow: 
+            inset 0 2px 4px rgba(255, 255, 255, 0.6),
+            inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+            0 5px 0 #8B6914,
+            0 7px 10px rgba(0, 0, 0, 0.4),
+            0 1px 0 rgba(255, 255, 255, 0.4);
+          border: 3px solid #B8860B;
+          border-bottom-color: #8B6914;
+          text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5), 0 -1px 0 rgba(0, 0, 0, 0.2);
+          transition: all 0.1s ease;
         }
         
-        .honey-button:active {
-          background: linear-gradient(180deg, #D4820F 0%, #F5A623 20%, #FFC107 50%, #FFD54F 80%, #FFE082 100%);
+        .wax-button-real:active {
+          transform: translateY(4px);
           box-shadow: 
             inset 0 2px 4px rgba(0, 0, 0, 0.3),
-            inset 0 -1px 2px rgba(255, 255, 255, 0.2);
+            inset 0 -1px 2px rgba(255, 255, 255, 0.2),
+            0 1px 0 #8B6914,
+            0 2px 4px rgba(0, 0, 0, 0.3);
         }
-        
-        /* Dark wax button */
-        .wax-button {
-          background: linear-gradient(180deg, #A67B5B 0%, #8B6914 50%, #654321 100%);
+
+        /* Green Answer Button */
+        .answer-button-real {
+          background: 
+            linear-gradient(180deg, 
+              #A5D6A7 0%, 
+              #81C784 10%,
+              #66BB6A 25%,
+              #4CAF50 45%,
+              #43A047 65%,
+              #388E3C 85%,
+              #2E7D32 100%
+            );
           box-shadow: 
-            inset 0 1px 2px rgba(255, 213, 79, 0.3),
-            inset 0 -2px 4px rgba(0, 0, 0, 0.3),
-            0 3px 6px rgba(0, 0, 0, 0.4);
-          border: 2px solid #4A3728;
+            inset 0 2px 4px rgba(255, 255, 255, 0.4),
+            inset 0 -3px 6px rgba(0, 0, 0, 0.25),
+            0 5px 0 #1B5E20,
+            0 7px 10px rgba(0, 0, 0, 0.4);
+          border: 3px solid #388E3C;
+          border-bottom-color: #1B5E20;
+          text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3), 0 -1px 0 rgba(0, 0, 0, 0.3);
         }
         
-        /* Call card - like dripping honey */
-        .call-card {
-          background: linear-gradient(180deg, #FFE082 0%, #FFD54F 30%, #F5A623 70%, #E6A800 100%);
+        .answer-button-real:active {
+          transform: translateY(4px);
+          box-shadow: 
+            inset 0 2px 4px rgba(0, 0, 0, 0.3),
+            inset 0 -1px 2px rgba(255, 255, 255, 0.15),
+            0 1px 0 #1B5E20,
+            0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Disabled button */
+        .button-disabled {
+          background: linear-gradient(180deg, #5D4037 0%, #4E342E 50%, #3E2723 100%);
+          box-shadow: inset 2px 2px 4px rgba(0, 0, 0, 0.5);
+          border: 2px solid #3E2723;
+          opacity: 0.6;
+        }
+
+        /* Call Card - Honey Drop Style */
+        .call-card-honey {
+          background: 
+            linear-gradient(180deg, 
+              rgba(255,255,255,0.3) 0%, 
+              transparent 20%,
+              transparent 100%
+            ),
+            linear-gradient(180deg, 
+              #FFE082 0%, 
+              #FFD54F 30%,
+              #F5A623 60%,
+              #D4820F 100%
+            );
           box-shadow: 
             inset 1px 1px 3px rgba(255, 255, 255, 0.5),
             inset -1px -1px 2px rgba(0, 0, 0, 0.15),
-            2px 3px 6px rgba(0, 0, 0, 0.35);
+            3px 4px 8px rgba(0, 0, 0, 0.35),
+            0 6px 12px rgba(212, 130, 15, 0.2);
           border: 2px solid #D4820F;
-          border-radius: 12px;
+          border-top-color: #E6A800;
         }
-        
-        /* Toxic spider call */
-        .call-toxic {
-          background: linear-gradient(180deg, #9C27B0 0%, #7B1FA2 50%, #4A148C 100%);
+
+        /* Toxic Spider Card */
+        .call-card-toxic {
+          background: 
+            linear-gradient(180deg, 
+              rgba(200,130,255,0.3) 0%, 
+              transparent 20%,
+              transparent 100%
+            ),
+            linear-gradient(180deg, 
+              #CE93D8 0%, 
+              #AB47BC 30%,
+              #8E24AA 60%,
+              #6A1B9A 100%
+            );
           box-shadow: 
-            inset 1px 1px 3px rgba(200, 130, 255, 0.4),
+            inset 1px 1px 3px rgba(200, 130, 255, 0.5),
             inset -1px -1px 2px rgba(0, 0, 0, 0.3),
-            2px 3px 6px rgba(0, 0, 0, 0.4);
-          border: 2px solid #6A1B9A;
+            3px 4px 8px rgba(0, 0, 0, 0.4),
+            0 0 15px rgba(156, 39, 176, 0.4);
+          border: 2px solid #7B1FA2;
         }
-        
-        /* Honey drop bonus */
-        .honey-drop {
-          background: radial-gradient(ellipse at 30% 30%, #FFE082 0%, #FFD54F 25%, #F5A623 50%, #D4820F 75%, #A67B5B 100%);
+
+        /* Inset Panel */
+        .inset-panel {
+          background: 
+            linear-gradient(180deg, 
+              #1A0F08 0%, 
+              #2D1F14 30%,
+              #3D2914 70%,
+              #2D1F14 100%
+            );
           box-shadow: 
-            inset 2px 2px 4px rgba(255, 255, 255, 0.6),
-            inset -1px -1px 3px rgba(0, 0, 0, 0.2),
-            0 4px 8px rgba(0, 0, 0, 0.4),
-            0 0 15px rgba(245, 166, 35, 0.5);
+            inset 4px 4px 10px rgba(0, 0, 0, 0.6),
+            inset -2px -2px 6px rgba(62, 41, 20, 0.2),
+            inset 0 2px 4px rgba(0, 0, 0, 0.4);
+          border: 2px solid #5D4037;
+          border-top-color: #3E2723;
         }
-        
-        /* Inset honey pool */
-        .honey-inset {
-          background: linear-gradient(180deg, #8B6914 0%, #A67B5B 50%, #654321 100%);
+
+        /* Badge */
+        .badge-honey {
+          background: 
+            linear-gradient(180deg, 
+              #FFE082 0%, 
+              #FFD54F 30%,
+              #F5A623 70%,
+              #D4820F 100%
+            );
           box-shadow: 
-            inset 3px 3px 6px rgba(0, 0, 0, 0.4),
-            inset -1px -1px 2px rgba(245, 166, 35, 0.2);
+            inset 1px 1px 2px rgba(255, 255, 255, 0.5),
+            2px 2px 4px rgba(0, 0, 0, 0.3);
+          border: 2px solid #B8860B;
+        }
+
+        .badge-wood {
+          background: 
+            linear-gradient(180deg, 
+              #5D4037 0%, 
+              #4E342E 50%,
+              #3E2723 100%
+            );
+          box-shadow: 
+            inset 1px 1px 2px rgba(255, 255, 255, 0.1),
+            2px 2px 4px rgba(0, 0, 0, 0.3);
+          border: 2px solid #3E2723;
+        }
+
+        /* Progress bar */
+        .progress-track {
+          background: 
+            linear-gradient(180deg, #1A0F08 0%, #2D1F14 50%, #1A0F08 100%);
+          box-shadow: 
+            inset 2px 2px 4px rgba(0, 0, 0, 0.6),
+            inset -1px -1px 2px rgba(62, 41, 20, 0.2);
+          border: 1px solid #5D4037;
+        }
+
+        .progress-fill-xp {
+          background: 
+            linear-gradient(180deg, 
+              #81C784 0%, 
+              #66BB6A 30%,
+              #4CAF50 50%,
+              #43A047 70%,
+              #2E7D32 100%
+            );
+          box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Alert styles */
+        .alert-red {
+          background: 
+            linear-gradient(180deg, 
+              #EF5350 0%, 
+              #E53935 30%,
+              #D32F2F 50%,
+              #C62828 70%,
+              #B71C1C 100%
+            );
+          box-shadow: 
+            inset 1px 1px 2px rgba(255, 255, 255, 0.2),
+            inset -1px -1px 2px rgba(0, 0, 0, 0.2),
+            4px 5px 12px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(229, 57, 53, 0.3);
+          border: 3px solid #B71C1C;
+        }
+
+        .alert-orange {
+          background: 
+            linear-gradient(180deg, 
+              #FFB74D 0%, 
+              #FFA726 30%,
+              #FB8C00 50%,
+              #EF6C00 70%,
+              #E65100 100%
+            );
+          border: 2px solid #EF6C00;
+        }
+
+        .alert-green {
+          background: 
+            linear-gradient(180deg, 
+              #81C784 0%, 
+              #66BB6A 30%,
+              #4CAF50 50%,
+              #43A047 70%,
+              #2E7D32 100%
+            );
+          border: 2px solid #1B5E20;
+        }
+
+        .alert-blue {
+          background: 
+            linear-gradient(180deg, 
+              #64B5F6 0%, 
+              #42A5F5 30%,
+              #1E88E5 50%,
+              #1565C0 70%,
+              #0D47A1 100%
+            );
+          border: 2px solid #0D47A1;
+        }
+
+        /* Combo badge */
+        .combo-badge {
+          background: 
+            linear-gradient(180deg, 
+              #FF8A65 0%, 
+              #FF7043 30%,
+              #F4511E 50%,
+              #E64A19 70%,
+              #BF360C 100%
+            );
+          box-shadow: 
+            inset 1px 1px 2px rgba(255, 255, 255, 0.3),
+            2px 3px 6px rgba(0, 0, 0, 0.35);
+          border: 2px solid #BF360C;
+        }
+
+        /* Achievement unlocked */
+        .achievement-unlocked {
+          background: 
+            linear-gradient(180deg, 
+              #FFE082 0%, 
+              #FFD54F 30%,
+              #F5A623 70%,
+              #D4820F 100%
+            );
+          box-shadow: 
+            inset 1px 1px 2px rgba(255, 255, 255, 0.5),
+            2px 2px 4px rgba(0, 0, 0, 0.25);
+          border: 2px solid #B8860B;
+        }
+
+        .achievement-locked {
+          background: 
+            linear-gradient(180deg, 
+              #5D4037 0%, 
+              #4E342E 50%,
+              #3E2723 100%
+            );
+          box-shadow: 
+            inset 1px 1px 2px rgba(0, 0, 0, 0.4);
+          border: 1px solid #3E2723;
         }
       `}</style>
       
-      {/* Main container */}
-      <div style={{
+      {/* Main container - Wood texture background */}
+      <div className="wood-panel" style={{
         minHeight: '100dvh',
-        background: 'linear-gradient(180deg, #3D2914 0%, #4A3728 30%, #5D4037 60%, #4E342E 100%)',
         color: '#FFE082',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         display: 'flex',
@@ -789,6 +1142,28 @@ export default function BeeCallCenter() {
         overflow: 'hidden',
         position: 'relative',
       }}>
+        {/* Honeycomb pattern overlay */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+          overflow: 'hidden', pointerEvents: 'none', zIndex: 0,
+          opacity: 0.08,
+        }}>
+          {[...Array(50)].map((_, i) => (
+            <div key={i} style={{
+              position: 'absolute',
+              width: 60,
+              height: 70,
+              background: `radial-gradient(ellipse at 30% 25%, rgba(255,224,130,0.3) 0%, transparent 40%),
+                          linear-gradient(145deg, rgba(245,166,35,0.4) 0%, rgba(212,130,15,0.3) 100%)`,
+              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+              left: `${(i % 7) * 15 - 3}%`,
+              top: `${Math.floor(i / 7) * 12 - 3}%`,
+              transform: `rotate(${i % 2 === 0 ? 0 : 30}deg)`,
+              filter: `blur(${i % 3 === 0 ? 0 : 1}px)`,
+            }} />
+          ))}
+        </div>
+
         {/* Particles */}
         {particles.map(p => (
           <div key={p.id} style={{
@@ -809,14 +1184,14 @@ export default function BeeCallCenter() {
         {activeBonuses.map(bonus => (
           <div
             key={bonus.id}
-            className="bonus-float honey-drop"
+            className="bonus-float honey-drop-real"
             onClick={() => collectBonus(bonus)}
             style={{
               position: 'absolute',
               left: `${bonus.x}%`,
               top: `${bonus.y}%`,
-              width: '64px',
-              height: '64px',
+              width: '70px',
+              height: '70px',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
@@ -830,33 +1205,13 @@ export default function BeeCallCenter() {
           </div>
         ))}
         
-        {/* Honeycomb pattern background */}
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-          overflow: 'hidden', pointerEvents: 'none', zIndex: 0,
-          opacity: 0.15,
-        }}>
-          {[...Array(20)].map((_, i) => (
-            <div key={i} style={{
-              position: 'absolute',
-              width: 50,
-              height: 58,
-              background: 'linear-gradient(145deg, #F5A623, #D4820F)',
-              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-              left: `${(i % 5) * 25 - 5}%`,
-              top: `${Math.floor(i / 5) * 22 - 5}%`,
-              transform: `rotate(${i % 2 === 0 ? 0 : 30}deg)`,
-            }} />
-          ))}
-        </div>
-        
         {/* Level up effect */}
         {levelUpEffect && (
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            fontSize: '72px', zIndex: 100,
+            fontSize: '80px', zIndex: 100,
             animation: 'levelUp 0.5s ease-in-out',
-            textShadow: '0 4px 12px rgba(92, 74, 50, 0.3)',
+            filter: 'drop-shadow(0 4px 12px rgba(255, 224, 130, 0.6))',
           }}>
             ⬆️
           </div>
@@ -869,16 +1224,16 @@ export default function BeeCallCenter() {
             background: 'linear-gradient(180deg, #FFE082 0%, #FFD54F 30%, #F5A623 70%, #D4820F 100%)',
             borderRadius: '20px', padding: '16px 28px',
             display: 'flex', alignItems: 'center', gap: '14px', zIndex: 100,
-            boxShadow: 'inset 1px 1px 3px rgba(255, 255, 255, 0.5), inset -1px -1px 2px rgba(0, 0, 0, 0.15), 3px 4px 8px rgba(0, 0, 0, 0.4)',
-            border: '2px solid #B8860B',
+            boxShadow: 'inset 2px 2px 4px rgba(255, 255, 255, 0.5), inset -2px -2px 4px rgba(0, 0, 0, 0.15), 5px 6px 15px rgba(0, 0, 0, 0.45), 0 0 20px rgba(245, 166, 35, 0.3)',
+            border: '3px solid #B8860B',
             animation: 'slideIn 0.5s ease-out',
           }}>
-            <span style={{ fontSize: '36px' }}>{achievementPopup.icon}</span>
+            <span style={{ fontSize: '40px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>{achievementPopup.icon}</span>
             <div>
-              <div className="graffiti-text" style={{ color: '#4A3728', fontSize: '16px' }}>
+              <div className="graffiti-text" style={{ color: '#3D2914', fontSize: '16px', textShadow: '0 1px 0 rgba(255,255,255,0.3)' }}>
                 🏆 {achievementPopup.name}
               </div>
-              <div style={{ fontSize: '13px', color: '#654321' }}>
+              <div style={{ fontSize: '13px', color: '#5D4037', fontWeight: 500 }}>
                 {achievementPopup.description}
               </div>
             </div>
@@ -889,18 +1244,18 @@ export default function BeeCallCenter() {
         {spiderVictimBanner && (
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            background: 'linear-gradient(180deg, #AB47BC 0%, #8E24AA 50%, #6A1B9A 100%)',
-            borderRadius: '20px', padding: '24px 32px',
+            background: 'linear-gradient(180deg, #CE93D8 0%, #AB47BC 30%, #8E24AA 60%, #6A1B9A 100%)',
+            borderRadius: '24px', padding: '28px 36px',
             textAlign: 'center', zIndex: 100,
-            boxShadow: 'inset 1px 1px 3px rgba(200, 130, 255, 0.4), inset -1px -1px 2px rgba(0, 0, 0, 0.3), 4px 5px 10px rgba(0, 0, 0, 0.5)',
-            border: '2px solid #4A148C',
+            boxShadow: 'inset 2px 2px 4px rgba(200, 130, 255, 0.4), inset -2px -2px 4px rgba(0, 0, 0, 0.3), 6px 8px 20px rgba(0, 0, 0, 0.5), 0 0 30px rgba(156, 39, 176, 0.4)',
+            border: '3px solid #7B1FA2',
             animation: 'slideIn 0.3s ease-out',
           }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}>🕷️</div>
-            <div className="graffiti-text" style={{ color: '#F3E5F5', fontSize: '20px', marginBottom: '8px' }}>
+            <div style={{ fontSize: '72px', marginBottom: '16px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))' }}>🕷️</div>
+            <div className="graffiti-text" style={{ color: '#F3E5F5', fontSize: '22px', marginBottom: '10px', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
               ВЫ СТАЛИ ЖЕРТВОЙ ПАУКА!
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#FFCDD2' }}>
+            <div style={{ fontSize: '32px', fontWeight: 800, color: '#FFCDD2', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
               -10 мёда
             </div>
           </div>
@@ -914,34 +1269,28 @@ export default function BeeCallCenter() {
           return (
           <div style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(62, 41, 20, 0.85)',
+            background: 'rgba(26, 15, 8, 0.9)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 300,
             padding: '20px',
-            backdropFilter: 'blur(8px)',
+            backdropFilter: 'blur(10px)',
           }}>
-            <div style={{
-              background: 'linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%)',
-              borderRadius: '24px',
+            <div className="wax-panel-real" style={{
+              borderRadius: '28px',
               padding: '40px 32px',
               maxWidth: '340px',
               width: '100%',
               textAlign: 'center',
-              boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 5px 6px 12px rgba(0, 0, 0, 0.5)',
-              border: '3px solid #8B6914',
             }}>
               {/* Icon/Character - centered */}
-              <div style={{ 
+              <div className="inset-panel" style={{ 
                 width: '180px', 
                 height: '180px', 
-                margin: '0 auto 20px auto',
+                margin: '0 auto 24px auto',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(180deg, #654321 0%, #4A3728 50%, #3D2914 100%)',
-                borderRadius: '16px',
-                boxShadow: 'inset 3px 3px 6px rgba(0, 0, 0, 0.5), inset -1px -1px 3px rgba(245, 166, 35, 0.2)',
-                border: '2px solid #5D4037',
+                borderRadius: '20px',
               }}>
                 <img 
                   src={isLegend ? '/trophy_gold_bg.png' : isWizard ? '/trophy_silver_bg.png' : '/bee_kitty_3d.png'}
@@ -950,18 +1299,18 @@ export default function BeeCallCenter() {
                     width: '90%', 
                     height: '90%', 
                     objectFit: 'cover',
-                    borderRadius: '12px',
+                    borderRadius: '16px',
                   }} 
                 />
               </div>
               
               {/* Title */}
               <h2 className="graffiti-text" style={{
-                fontSize: '22px',
+                fontSize: '24px',
                 color: isLegend ? '#FFD700' : isWizard ? '#C0C0C0' : '#FFE082',
                 marginBottom: '16px',
                 lineHeight: 1.3,
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255,255,255,0.3)',
               }}>
                 {isLegend 
                   ? 'Легендарный уровень!'
@@ -985,40 +1334,37 @@ export default function BeeCallCenter() {
               </p>
               
               {/* Stats */}
-              <div style={{
-                background: 'linear-gradient(180deg, #654321 0%, #4A3728 50%, #3D2914 100%)',
-                borderRadius: '12px',
-                padding: '16px',
-                marginBottom: '24px',
-                boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.4), inset -1px -1px 2px rgba(245, 166, 35, 0.15)',
-                border: '2px solid #5D4037',
+              <div className="inset-panel" style={{
+                borderRadius: '16px',
+                padding: '18px',
+                marginBottom: '28px',
               }}>
-                <div style={{ fontSize: '14px', color: '#D4A84B', marginBottom: '8px' }}>
+                <div style={{ fontSize: '14px', color: '#D4A84B', marginBottom: '12px', fontWeight: 600 }}>
                   Ваш результат:
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '24px' }}>
                   <div>
-                    <div style={{ fontSize: '28px' }}>🍯</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#FFD54F' }}>{totalCreditsEarned.toFixed(1)}</div>
+                    <div style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🍯</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#FFD54F' }}>{totalCreditsEarned.toFixed(1)}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '28px' }}>⭐</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#FFD54F' }}>{level}</div>
+                    <div style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>⭐</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#FFD54F' }}>{level}</div>
                   </div>
                   <div>
-                    <div style={{ fontSize: '28px' }}>📞</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#FFD54F' }}>{totalCallsAnswered}</div>
+                    <div style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>📞</div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, color: '#FFD54F' }}>{totalCallsAnswered}</div>
                   </div>
                 </div>
               </div>
               
               <button
                 onClick={restartGame}
-                className="touch-button honey-button"
+                className="touch-button wax-button-real"
                 style={{
-                  padding: '16px 40px',
+                  padding: '16px 44px',
                   border: 'none',
-                  borderRadius: '16px',
+                  borderRadius: '18px',
                   color: '#3D2914',
                   fontSize: '18px',
                   fontWeight: 700,
@@ -1036,37 +1382,36 @@ export default function BeeCallCenter() {
         {showTutorial && (
           <div style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(62, 41, 20, 0.85)',
+            background: 'rgba(26, 15, 8, 0.9)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 200,
             padding: '20px',
-            backdropFilter: 'blur(8px)',
+            backdropFilter: 'blur(10px)',
           }}>
-            <div style={{
-              background: 'linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%)',
-              borderRadius: '24px',
-              padding: '32px 28px',
+            <div className="wax-panel-real" style={{
+              borderRadius: '28px',
+              padding: '36px 30px',
               maxWidth: '340px',
               width: '100%',
               textAlign: 'center',
-              boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 5px 6px 12px rgba(0, 0, 0, 0.5)',
-              border: '3px solid #8B6914',
             }}>
               {/* Progress dots */}
               <div style={{
-                display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '24px',
+                display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '28px',
               }}>
                 {TUTORIAL_STEPS.map((_, i) => (
                   <div key={i} style={{
-                    width: '12px', height: '12px',
+                    width: '14px', height: '14px',
                     borderRadius: '50%',
                     background: i === tutorialStep 
                       ? 'linear-gradient(180deg, #FFE082, #F5A623)' 
                       : i < tutorialStep 
-                        ? 'linear-gradient(180deg, #66BB6A, #43A047)' 
-                        : 'linear-gradient(180deg, #654321, #3D2914)',
-                    boxShadow: i === tutorialStep ? 'inset 1px 1px 2px rgba(255, 255, 255, 0.5), 0 0 8px rgba(245, 166, 35, 0.5)' : 'inset 1px 1px 2px rgba(0, 0, 0, 0.3)',
-                    border: '1px solid #5D4037',
+                        ? 'linear-gradient(180deg, #81C784, #4CAF50)' 
+                        : 'linear-gradient(180deg, #5D4037, #3E2723)',
+                    boxShadow: i === tutorialStep 
+                      ? 'inset 1px 1px 2px rgba(255, 255, 255, 0.5), 0 0 10px rgba(245, 166, 35, 0.5)' 
+                      : 'inset 1px 1px 2px rgba(0, 0, 0, 0.4)',
+                    border: i === tutorialStep ? '2px solid #B8860B' : '1px solid #3E2723',
                     transition: 'all 0.3s ease',
                   }} />
                 ))}
@@ -1074,19 +1419,20 @@ export default function BeeCallCenter() {
               
               {/* Emoji */}
               <div style={{
-                fontSize: '80px',
-                marginBottom: '20px',
+                fontSize: '88px',
+                marginBottom: '24px',
                 animation: 'float 2s ease-in-out infinite',
+                filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
               }}>
                 {TUTORIAL_STEPS[tutorialStep].emoji}
               </div>
               
               {/* Title */}
               <h2 className="graffiti-text" style={{
-                fontSize: '22px',
+                fontSize: '24px',
                 color: '#3D2914',
                 marginBottom: '16px',
-                textShadow: '0 1px 0 rgba(255, 255, 255, 0.3)',
+                textShadow: '0 1px 0 rgba(255, 255, 255, 0.4)',
               }}>
                 {TUTORIAL_STEPS[tutorialStep].title}
               </h2>
@@ -1096,38 +1442,39 @@ export default function BeeCallCenter() {
                 fontSize: '16px',
                 lineHeight: 1.6,
                 color: '#4A3728',
-                marginBottom: '28px',
+                marginBottom: '32px',
               }}>
                 {TUTORIAL_STEPS[tutorialStep].content}
               </p>
               
               {/* Buttons */}
               <div style={{
-                display: 'flex', gap: '12px',
+                display: 'flex', gap: '14px',
                 justifyContent: 'center',
               }}>
                 <button
                   onClick={closeTutorial}
-                  className="wax-button"
                   style={{
-                    padding: '12px 20px',
-                    border: 'none',
-                    borderRadius: '12px',
-                    color: '#FFE082',
+                    padding: '14px 22px',
+                    background: 'linear-gradient(180deg, #5D4037 0%, #4E342E 50%, #3E2723 100%)',
+                    border: '2px solid #3E2723',
+                    borderRadius: '14px',
+                    color: '#D4A84B',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
+                    boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.1), 2px 3px 6px rgba(0, 0, 0, 0.4)',
                   }}
                 >
                   Пропустить
                 </button>
                 <button
                   onClick={nextTutorialStep}
-                  className="touch-button honey-button"
+                  className="touch-button wax-button-real"
                   style={{
-                    padding: '12px 28px',
+                    padding: '14px 32px',
                     border: 'none',
-                    borderRadius: '12px',
+                    borderRadius: '14px',
                     color: '#3D2914',
                     fontSize: '15px',
                     fontWeight: 700,
@@ -1143,83 +1490,67 @@ export default function BeeCallCenter() {
         
         {/* Header */}
         <header className="safe-top" style={{
-          padding: '12px 16px',
+          padding: '14px 18px',
           position: 'relative', zIndex: 10,
         }}>
           {/* Level & XP bar */}
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px',
+            display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px',
           }}>
-            <div className={levelUpEffect ? 'level-up' : ''} style={{
-              background: 'linear-gradient(180deg, #FFE082 0%, #F5A623 50%, #D4820F 100%)',
-              padding: '6px 14px', borderRadius: '10px',
+            <div className={levelUpEffect ? 'level-up badge-honey' : 'badge-honey'} style={{
+              padding: '8px 16px', borderRadius: '12px',
               fontWeight: 700, fontSize: '14px', color: '#3D2914',
-              boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-              border: '2px solid #B8860B',
             }}>
               ⭐ Уровень {level}
             </div>
-            <div style={{ 
+            <div className="progress-track" style={{ 
               flex: 1, 
-              height: '14px', 
-              background: 'linear-gradient(180deg, #3D2914 0%, #4A3728 50%, #3D2914 100%)', 
-              borderRadius: '8px', 
+              height: '16px', 
+              borderRadius: '10px', 
               overflow: 'hidden',
-              boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.5)',
-              border: '1px solid #5D4037',
             }}>
-              <div style={{
+              <div className="progress-fill-xp" style={{
                 width: `${(xp / xpToNext) * 100}%`,
                 height: '100%',
-                background: 'linear-gradient(180deg, #66BB6A 0%, #43A047 50%, #2E7D32 100%)',
                 transition: 'width 0.3s ease',
-                borderRadius: '6px',
-                boxShadow: 'inset 0 1px 2px rgba(255, 255, 255, 0.3)',
+                borderRadius: '8px',
               }} />
             </div>
-            <div style={{ fontSize: '12px', color: '#D4A84B', fontWeight: 600 }}>
+            <div style={{ fontSize: '13px', color: '#D4A84B', fontWeight: 600 }}>
               {xp}/{xpToNext} XP
             </div>
           </div>
           
           {/* Title & Stats */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '28px' }}>🐝</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '32px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.4))' }}>🐝</span>
               <h1 className="graffiti-text" style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 color: '#FFD54F',
-                textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+                textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 213, 79, 0.3)',
               }}>
                 МЁдЦентр
               </h1>
             </div>
             
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <div style={{
-                background: penaltyAnimation 
-                  ? 'linear-gradient(180deg, #EF5350 0%, #E53935 50%, #C62828 100%)' 
-                  : 'linear-gradient(180deg, #FFE082 0%, #FFD54F 30%, #F5A623 70%, #D4820F 100%)',
-                padding: '6px 14px', borderRadius: '10px',
-                display: 'flex', alignItems: 'center', gap: '4px',
-                boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-                border: penaltyAnimation ? '2px solid #B71C1C' : '2px solid #B8860B',
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <div className={penaltyAnimation ? 'alert-red' : 'badge-honey'} style={{
+                padding: '8px 16px', borderRadius: '12px',
+                display: 'flex', alignItems: 'center', gap: '6px',
               }}>
-                <span>🍯</span>
-                <span className="graffiti-text" style={{ fontSize: '16px', color: penaltyAnimation ? '#FFCDD2' : '#3D2914' }}>
+                <span style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>🍯</span>
+                <span className="graffiti-text" style={{ fontSize: '17px', color: penaltyAnimation ? '#FFCDD2' : '#3D2914' }}>
                   {balance.toFixed(1)}
                 </span>
               </div>
               
-              <div style={{
-                background: 'linear-gradient(180deg, #5D4037 0%, #4E342E 50%, #3E2723 100%)',
-                padding: '6px 14px', borderRadius: '10px',
-                display: 'flex', alignItems: 'center', gap: '4px',
-                boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.1), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-                border: '2px solid #3E2723',
+              <div className="badge-wood" style={{
+                padding: '8px 16px', borderRadius: '12px',
+                display: 'flex', alignItems: 'center', gap: '6px',
               }}>
-                <span>📞</span>
-                <span className="graffiti-text" style={{ fontSize: '16px', color: '#FFD54F' }}>
+                <span style={{ filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>📞</span>
+                <span className="graffiti-text" style={{ fontSize: '17px', color: '#FFD54F' }}>
                   {clientQueue.length}
                 </span>
               </div>
@@ -1228,13 +1559,10 @@ export default function BeeCallCenter() {
           
           {/* Combo indicator */}
           {combo > 1 && (
-            <div style={{
+            <div className="combo-badge" style={{
               position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-              background: 'linear-gradient(180deg, #FF7043 0%, #F4511E 50%, #E64A19 100%)',
-              padding: '4px 16px', borderRadius: '10px',
-              fontSize: '18px', fontWeight: 700, marginTop: '4px', color: '#FFF',
-              boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-              border: '2px solid #BF360C',
+              padding: '6px 20px', borderRadius: '12px',
+              fontSize: '18px', fontWeight: 700, marginTop: '6px', color: '#FFF',
             }}>
               🔥 КОМБО x{combo}! +{combo * 10}%
             </div>
@@ -1242,14 +1570,11 @@ export default function BeeCallCenter() {
           
           {/* Shield indicator */}
           {hasShield && (
-            <div style={{
-              position: 'absolute', top: '100%', right: '16px',
-              background: 'linear-gradient(180deg, #42A5F5 0%, #1E88E5 50%, #1565C0 100%)',
-              padding: '4px 12px', borderRadius: '10px',
-              fontSize: '13px', fontWeight: 600, marginTop: '4px', color: '#FFF',
-              display: 'flex', alignItems: 'center', gap: '6px',
-              boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-              border: '2px solid #0D47A1',
+            <div className="alert-blue" style={{
+              position: 'absolute', top: '100%', right: '18px',
+              padding: '6px 14px', borderRadius: '12px',
+              fontSize: '14px', fontWeight: 600, marginTop: '6px', color: '#FFF',
+              display: 'flex', alignItems: 'center', gap: '8px',
             }}>
               🛡️ Щит: {shieldTimer}с
             </div>
@@ -1258,91 +1583,70 @@ export default function BeeCallCenter() {
         
         {/* Main content */}
         <main style={{
-          flex: 1, overflow: 'auto', padding: '12px',
-          paddingTop: combo > 1 ? '50px' : '12px',
-          paddingBottom: '180px',
-          display: 'flex', flexDirection: 'column', gap: '12px',
+          flex: 1, overflow: 'auto', padding: '14px',
+          paddingTop: combo > 1 ? '56px' : '14px',
+          paddingBottom: '190px',
+          display: 'flex', flexDirection: 'column', gap: '14px',
           position: 'relative', zIndex: 5,
         }}>
           {/* Operators grid */}
-          <section style={{
-            background: 'linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%)',
-            borderRadius: '18px', padding: '14px',
-            boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 4px 4px 8px rgba(0, 0, 0, 0.4)',
-            border: '2px solid #8B6914',
+          <section className="wax-panel-real" style={{
+            borderRadius: '22px', padding: '18px',
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <h2 className="graffiti-text" style={{ fontSize: '14px', color: '#3D2914' }}>🐝 Операторы</h2>
-              <span style={{ 
-                fontSize: '12px', 
-                background: 'linear-gradient(180deg, #654321 0%, #4A3728 50%, #3D2914 100%)', 
-                padding: '4px 10px', 
-                borderRadius: '8px',
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <h2 className="graffiti-text" style={{ fontSize: '15px', color: '#3D2914', textShadow: '0 1px 0 rgba(255,255,255,0.3)' }}>🐝 Операторы</h2>
+              <span className="inset-panel" style={{ 
+                fontSize: '13px', 
+                padding: '6px 14px', 
+                borderRadius: '10px',
                 color: '#FFD54F',
-                boxShadow: 'inset 1px 1px 2px rgba(0, 0, 0, 0.4)',
-                border: '1px solid #5D4037',
               }}>
                 {freeOperators}/{operators}
               </span>
             </div>
             
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
               {[...Array(operators)].map((_, i) => {
                 const isBusy = busyOperators.has(i)
                 return (
-                  <div key={i} className="hex-cell" style={{
-                    width: '40px', height: '46px',
-                    background: isBusy 
-                      ? 'linear-gradient(180deg, #8D6E63 0%, #6D4C41 50%, #4E342E 100%)' 
-                      : 'linear-gradient(180deg, #FFE082 0%, #FFD54F 30%, #F5A623 70%, #D4820F 100%)',
+                  <div key={i} className={`hex-cell ${isBusy ? 'honeycomb-busy' : 'honeycomb-free'}`} style={{
+                    width: '44px', height: '52px',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '18px',
-                    boxShadow: isBusy 
-                      ? 'inset 1px 1px 2px rgba(255, 255, 255, 0.15), 2px 2px 4px rgba(0, 0, 0, 0.3)'
-                      : 'inset 1px 1px 3px rgba(255, 255, 255, 0.5), 2px 3px 6px rgba(0, 0, 0, 0.35)',
-                    border: isBusy ? '2px solid #3E2723' : '2px solid #B8860B',
+                    fontSize: '20px',
                   }}>
-                    {isBusy ? '📞' : '🐝'}
+                    <span className={isBusy ? 'pulse' : 'bee-wiggle'}>{isBusy ? '📞' : '🐝'}</span>
                   </div>
                 )
               })}
               {[...Array(maxOperators - operators)].map((_, i) => (
-                <div key={`e-${i}`} className="hex-cell" style={{
-                  width: '40px', height: '46px',
-                  background: 'linear-gradient(180deg, #4A3728 0%, #3D2914 50%, #2D1F14 100%)',
-                  boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.5)',
-                  border: '1px solid #5D4037',
+                <div key={`e-${i}`} className="hex-cell honeycomb-empty" style={{
+                  width: '44px', height: '52px',
                 }} />
               ))}
             </div>
           </section>
           
           {/* Queue */}
-          <section style={{
-            background: 'linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%)',
-            borderRadius: '18px', padding: '14px',
-            boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 4px 4px 8px rgba(0, 0, 0, 0.4)',
-            border: '2px solid #8B6914',
+          <section className="wax-panel-real" style={{
+            borderRadius: '22px', padding: '18px',
           }}>
-            <h2 className="graffiti-text" style={{ fontSize: '14px', marginBottom: '10px', color: '#3D2914' }}>
+            <h2 className="graffiti-text" style={{ fontSize: '15px', marginBottom: '12px', color: '#3D2914', textShadow: '0 1px 0 rgba(255,255,255,0.3)' }}>
               📨 Входящие <span style={{ opacity: 0.7 }}>⏱️ {Math.max(1.5, 3 - (gameSpeed - 1) * 0.3).toFixed(1)}с</span>
             </h2>
             
-            <div className="custom-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', minHeight: '50px' }}>
+            <div className="custom-scrollbar" style={{ display: 'flex', gap: '10px', overflowX: 'auto', minHeight: '56px' }}>
               {clientQueue.length === 0 ? (
-                <div style={{ 
+                <div className="inset-panel" style={{ 
                   flex: 1, 
                   display: 'flex', 
                   alignItems: 'center', 
                   justifyContent: 'center', 
-                  opacity: 0.7,
+                  opacity: 0.8,
                   color: '#D4A84B',
-                  background: 'linear-gradient(180deg, #4A3728 0%, #3D2914 50%, #2D1F14 100%)',
-                  borderRadius: '12px',
-                  boxShadow: 'inset 2px 2px 4px rgba(0, 0, 0, 0.5)',
-                  border: '1px solid #5D4037',
+                  borderRadius: '14px',
+                  fontSize: '14px',
                 }}>
-                  Ожидание...
+                  Ожидание звонков...
                 </div>
               ) : (
                 clientQueue.map((client) => {
@@ -1350,26 +1654,17 @@ export default function BeeCallCenter() {
                   const isUrgent = client.timeLeft <= 1
                   
                   return (
-                    <div key={client.id} className="slide-in" style={{
-                      flexShrink: 0, padding: '8px 12px',
-                      background: isToxic 
-                        ? 'linear-gradient(180deg, #AB47BC 0%, #8E24AA 50%, #6A1B9A 100%)'
-                        : isUrgent 
-                          ? 'linear-gradient(180deg, #EF5350 0%, #E53935 50%, #C62828 100%)'
-                          : client.timeLeft <= 2 
-                            ? 'linear-gradient(180deg, #FFA726 0%, #FB8C00 50%, #EF6C00 100%)' 
-                            : 'linear-gradient(180deg, #66BB6A 0%, #43A047 50%, #2E7D32 100%)',
-                      borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '6px',
-                      boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-                      border: isToxic ? '2px solid #4A148C' : isUrgent ? '2px solid #B71C1C' : '2px solid #1B5E20',
+                    <div key={client.id} className={`slide-in ${isToxic ? 'call-card-toxic' : isUrgent ? 'alert-red' : client.timeLeft <= 2 ? 'alert-orange' : 'alert-green'}`} style={{
+                      flexShrink: 0, padding: '10px 14px',
+                      borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '8px',
                     }}>
-                      <span style={{ fontSize: '16px' }}>{client.type.emoji}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#FFF' }}>
+                      <span style={{ fontSize: '18px', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.3))' }}>{client.type.emoji}</span>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: '#FFF', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
                         {isToxic ? 'ПАУК!' : client.type.name}
                       </span>
                       <span style={{
-                        background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '6px',
-                        fontSize: '11px', fontWeight: 700, color: '#FFF',
+                        background: 'rgba(0,0,0,0.35)', padding: '3px 8px', borderRadius: '8px',
+                        fontSize: '12px', fontWeight: 700, color: '#FFF',
                       }}>
                         {client.timeLeft.toFixed(1)}с
                       </span>
@@ -1382,82 +1677,63 @@ export default function BeeCallCenter() {
           
           {/* Hornet alert */}
           {hornetActive && (
-            <section style={{
-              background: 'linear-gradient(180deg, #EF5350 0%, #E53935 50%, #C62828 100%)',
-              borderRadius: '18px', padding: '12px 16px',
-              display: 'flex', alignItems: 'center', gap: '12px',
-              boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.2), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 4px 4px 8px rgba(0, 0, 0, 0.4)',
-              border: '3px solid #B71C1C',
+            <section className="alert-red" style={{
+              borderRadius: '22px', padding: '14px 18px',
+              display: 'flex', alignItems: 'center', gap: '14px',
             }}>
-              <div style={{
-                width: '48px', height: '48px',
-                background: 'linear-gradient(180deg, #FFE082 0%, #FFD54F 30%, #F5A623 70%, #D4820F 100%)',
+              <div className="honey-drop-real" style={{
+                width: '56px', height: '56px',
                 borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '26px',
-                boxShadow: 'inset 1px 1px 3px rgba(255, 255, 255, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.3)',
-                border: '2px solid #B8860B',
+                fontSize: '30px',
               }}>
                 🦅
               </div>
               <div>
-                <h3 className="graffiti-text" style={{ color: '#FFF', marginBottom: '2px', textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)' }}>
+                <h3 className="graffiti-text" style={{ color: '#FFF', marginBottom: '4px', textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)', fontSize: '18px' }}>
                   ⚠️ ШЕРШЕНЬ!
                 </h3>
-                <p style={{ fontSize: '12px', opacity: 0.95, color: '#FFCDD2' }}>
-                  {hornetDuration}с • Похищено: {lastCaptured}
+                <p style={{ fontSize: '14px', opacity: 0.95, color: '#FFCDD2' }}>
+                  {hornetDuration}с • Похищено: {lastCaptured} пчёл
                 </p>
               </div>
             </section>
           )}
           
           {/* Stats */}
-          <section style={{
-            background: 'linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%)',
-            borderRadius: '16px', padding: '12px',
+          <section className="wax-panel-real" style={{
+            borderRadius: '20px', padding: '16px',
             display: 'flex', justifyContent: 'space-around',
-            boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 4px 4px 8px rgba(0, 0, 0, 0.4)',
-            border: '2px solid #8B6914',
           }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '24px' }}>💰</div>
-              <div className="graffiti-text" style={{ color: '#3D2914' }}>{totalCreditsEarned.toFixed(0)}</div>
-              <div style={{ fontSize: '10px', color: '#5D4037' }}>Всего</div>
+              <div style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>💰</div>
+              <div className="graffiti-text" style={{ color: '#3D2914', fontSize: '18px' }}>{totalCreditsEarned.toFixed(0)}</div>
+              <div style={{ fontSize: '11px', color: '#5D4037', fontWeight: 500 }}>Всего</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '24px' }}>📞</div>
-              <div className="graffiti-text" style={{ color: '#3D2914' }}>{totalCallsAnswered}</div>
-              <div style={{ fontSize: '10px', color: '#5D4037' }}>Звонков</div>
+              <div style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>📞</div>
+              <div className="graffiti-text" style={{ color: '#3D2914', fontSize: '18px' }}>{totalCallsAnswered}</div>
+              <div style={{ fontSize: '11px', color: '#5D4037', fontWeight: 500 }}>Звонков</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '24px' }}>🏆</div>
-              <div className="graffiti-text" style={{ color: '#3D2914' }}>{highScore.toFixed(0)}</div>
-              <div style={{ fontSize: '10px', color: '#5D4037' }}>Рекорд</div>
+              <div style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }}>🏆</div>
+              <div className="graffiti-text" style={{ color: '#3D2914', fontSize: '18px' }}>{highScore.toFixed(0)}</div>
+              <div style={{ fontSize: '11px', color: '#5D4037', fontWeight: 500 }}>Рекорд</div>
             </div>
           </section>
           
           {/* Achievements mini */}
-          <section style={{
-            background: 'linear-gradient(165deg, #E8C872 0%, #D4A84B 25%, #C49A3D 50%, #B8860B 75%, #A67B5B 100%)',
-            borderRadius: '16px', padding: '10px 14px',
-            display: 'flex', gap: '8px', flexWrap: 'wrap',
-            boxShadow: 'inset 1px 1px 2px rgba(255, 255, 255, 0.3), inset -1px -1px 2px rgba(0, 0, 0, 0.2), 4px 4px 8px rgba(0, 0, 0, 0.4)',
-            border: '2px solid #8B6914',
+          <section className="wax-panel-real" style={{
+            borderRadius: '20px', padding: '14px 18px',
+            display: 'flex', gap: '10px', flexWrap: 'wrap',
           }}>
             {achievements.map(a => (
-              <div key={a.id} style={{
-                padding: '6px 10px',
-                background: a.unlocked 
-                  ? 'linear-gradient(180deg, #FFE082 0%, #FFD54F 30%, #F5A623 70%, #D4820F 100%)' 
-                  : 'linear-gradient(180deg, #5D4037 0%, #4E342E 50%, #3E2723 100%)',
-                borderRadius: '10px', fontSize: '12px', opacity: a.unlocked ? 1 : 0.6,
-                display: 'flex', alignItems: 'center', gap: '4px',
-                boxShadow: a.unlocked 
-                  ? 'inset 1px 1px 2px rgba(255, 255, 255, 0.4), 2px 2px 4px rgba(0, 0, 0, 0.25)'
-                  : 'inset 1px 1px 2px rgba(0, 0, 0, 0.4)',
-                border: a.unlocked ? '2px solid #B8860B' : '1px solid #3E2723',
+              <div key={a.id} className={a.unlocked ? 'achievement-unlocked' : 'achievement-locked'} style={{
+                padding: '8px 14px',
+                borderRadius: '12px', fontSize: '13px', opacity: a.unlocked ? 1 : 0.5,
+                display: 'flex', alignItems: 'center', gap: '6px',
               }}>
-                <span>{a.icon}</span>
-                <span className="graffiti-text" style={{ fontSize: '10px', color: a.unlocked ? '#3D2914' : '#A1887F' }}>
+                <span style={{ filter: a.unlocked ? 'drop-shadow(0 1px 2px rgba(0,0,0,0.2))' : 'none' }}>{a.icon}</span>
+                <span className="graffiti-text" style={{ fontSize: '11px', color: a.unlocked ? '#3D2914' : '#8D6E63' }}>
                   {a.name}
                 </span>
               </div>
@@ -1468,55 +1744,41 @@ export default function BeeCallCenter() {
         {/* Buttons */}
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
-          padding: '12px 16px',
-          background: 'linear-gradient(180deg, transparent, rgba(62, 41, 20, 0.95))',
+          padding: '14px 18px',
+          background: 'linear-gradient(180deg, transparent, rgba(26, 15, 8, 0.98))',
           zIndex: 20,
         }} className="safe-bottom">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
             <button onClick={hireBee} disabled={balance < 10 || operators >= maxOperators}
-              className="touch-button" style={{
-                minHeight: '72px', padding: '10px',
-                background: balance >= 10 && operators < maxOperators
-                  ? 'linear-gradient(180deg, #FFE082 0%, #FFD54F 20%, #FFC107 50%, #F5A623 80%, #D4820F 100%)'
-                  : 'linear-gradient(180deg, #5D4037 0%, #4E342E 50%, #3E2723 100%)',
-                border: balance >= 10 && operators < maxOperators ? '2px solid #B8860B' : '1px solid #3E2723',
-                borderRadius: '16px',
+              className={`touch-button ${balance >= 10 && operators < maxOperators ? 'wax-button-real' : 'button-disabled'}`} style={{
+                minHeight: '80px', padding: '12px',
+                border: 'none',
+                borderRadius: '20px',
                 cursor: balance >= 10 && operators < maxOperators ? 'pointer' : 'not-allowed',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                opacity: balance >= 10 && operators < maxOperators ? 1 : 0.5,
-                transform: hireAnimation ? 'scale(0.95)' : 'scale(1)',
-                boxShadow: balance >= 10 && operators < maxOperators 
-                  ? 'inset 0 2px 4px rgba(255, 255, 255, 0.5), inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.3)' 
-                  : 'inset 2px 2px 4px rgba(0, 0, 0, 0.4)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                transform: hireAnimation ? 'translateY(4px)' : 'translateY(0)',
               }}>
-              <span style={{ fontSize: '24px' }}>🐝</span>
-              <span className="graffiti-text" style={{ fontSize: '14px', color: balance >= 10 && operators < maxOperators ? '#3D2914' : '#A1887F' }}>
+              <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>🐝</span>
+              <span className="graffiti-text" style={{ fontSize: '15px', color: balance >= 10 && operators < maxOperators ? '#3D2914' : '#8D6E63' }}>
                 НАНЯТЬ
               </span>
-              <span style={{ fontSize: '11px', opacity: 0.8, color: balance >= 10 && operators < maxOperators ? '#5D4037' : '#8D6E63' }}>-10 🍯</span>
+              <span style={{ fontSize: '12px', opacity: 0.85, color: balance >= 10 && operators < maxOperators ? '#5D4037' : '#8D6E63' }}>-10 🍯</span>
             </button>
             
             <button onClick={answerCall} disabled={freeOperators <= 0 || clientQueue.length === 0}
-              className="touch-button" style={{
-                minHeight: '72px', padding: '10px',
-                background: freeOperators > 0 && clientQueue.length > 0
-                  ? 'linear-gradient(180deg, #81C784 0%, #66BB6A 25%, #43A047 50%, #2E7D32 75%, #1B5E20 100%)'
-                  : 'linear-gradient(180deg, #5D4037 0%, #4E342E 50%, #3E2723 100%)',
-                border: freeOperators > 0 && clientQueue.length > 0 ? '2px solid #2E7D32' : '1px solid #3E2723',
-                borderRadius: '16px',
+              className={`touch-button ${freeOperators > 0 && clientQueue.length > 0 ? 'answer-button-real' : 'button-disabled'}`} style={{
+                minHeight: '80px', padding: '12px',
+                border: 'none',
+                borderRadius: '20px',
                 cursor: freeOperators > 0 && clientQueue.length > 0 ? 'pointer' : 'not-allowed',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                opacity: freeOperators > 0 && clientQueue.length > 0 ? 1 : 0.5,
-                transform: answerAnimation ? 'scale(0.95)' : 'scale(1)',
-                boxShadow: freeOperators > 0 && clientQueue.length > 0 
-                  ? 'inset 0 2px 4px rgba(255, 255, 255, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.2), 0 4px 8px rgba(0, 0, 0, 0.3)' 
-                  : 'inset 2px 2px 4px rgba(0, 0, 0, 0.4)',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
+                transform: answerAnimation ? 'translateY(4px)' : 'translateY(0)',
               }}>
-              <span style={{ fontSize: '24px' }}>📞</span>
-              <span className="graffiti-text" style={{ fontSize: '14px', color: '#FFF', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+              <span style={{ fontSize: '28px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>📞</span>
+              <span className="graffiti-text" style={{ fontSize: '15px', color: '#FFF', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
                 ОТВЕТИТЬ
               </span>
-              <span style={{ fontSize: '11px', opacity: 0.95, color: '#E8F5E9' }}>+{combo > 1 ? (1 + combo * 0.1).toFixed(1) : '1'} 🍯</span>
+              <span style={{ fontSize: '12px', opacity: 0.95, color: '#E8F5E9' }}>+{combo > 1 ? (1 + combo * 0.1).toFixed(1) : '1'} 🍯</span>
             </button>
           </div>
         </div>
