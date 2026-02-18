@@ -219,6 +219,11 @@ export default function BeeCallCenter() {
       content: 'Иногда появляются бонусы: 🍯 мёд, 🐝 пчела, 🛡️ щит, ⚡ скорость. Тапните, чтобы забрать!',
       emoji: '🎁',
     },
+    {
+      title: '💀 Конец игры',
+      content: 'Если все пчёлы пропадут и мёда не хватит для найма — игра окончена! Берегите своих пчёл!',
+      emoji: '💀',
+    },
   ]
 
   // Spawn particle effect
@@ -813,7 +818,12 @@ export default function BeeCallCenter() {
         )}
         
         {/* Game Over screen */}
-        {gameOver && (
+        {gameOver && (() => {
+          // Determine game over variant based on level
+          const isLegend = level > 20
+          const isWizard = level > 10
+          
+          return (
           <div style={{
             position: 'fixed', inset: 0,
             background: 'rgba(0, 0, 0, 0.9)',
@@ -822,35 +832,74 @@ export default function BeeCallCenter() {
             padding: '20px',
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #78350f, #451a03)',
+              background: isLegend 
+                ? 'linear-gradient(135deg, #854d0e, #713f12)'
+                : isWizard 
+                  ? 'linear-gradient(135deg, #475569, #1e293b)'
+                  : 'linear-gradient(135deg, #78350f, #451a03)',
               borderRadius: '32px',
               padding: '40px 32px',
               maxWidth: '340px',
               width: '100%',
               textAlign: 'center',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 80px rgba(251, 191, 36, 0.2)',
-              border: '4px solid #fbbf24',
+              boxShadow: isLegend
+                ? '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 100px rgba(251, 191, 36, 0.5)'
+                : isWizard
+                  ? '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 80px rgba(16, 185, 129, 0.4)'
+                  : '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 80px rgba(251, 191, 36, 0.2)',
+              border: isLegend 
+                ? '4px solid #fbbf24'
+                : isWizard 
+                  ? '4px solid #10b981'
+                  : '4px solid #fbbf24',
             }}>
-              <div style={{ fontSize: '80px', marginBottom: '20px' }}>😢🐝</div>
+              {/* Icon/Character */}
+              {isLegend ? (
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '80px', filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.8))' }}>🏆</div>
+                  <div style={{ fontSize: '40px', marginTop: '-20px' }}>💎</div>
+                </div>
+              ) : isWizard ? (
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '80px', filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.8))' }}>🏆</div>
+                  <div style={{ fontSize: '36px', marginTop: '-15px' }}>💚</div>
+                </div>
+              ) : (
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '80px' }}>🐝</div>
+                  <div style={{ fontSize: '32px', marginTop: '-10px' }}>🐱</div>
+                </div>
+              )}
               
+              {/* Title */}
               <h2 className="graffiti-text" style={{
-                fontSize: '24px',
-                color: '#fbbf24',
+                fontSize: '22px',
+                color: isLegend ? '#fef08a' : isWizard ? '#6ee7b7' : '#fbbf24',
                 marginBottom: '16px',
                 lineHeight: 1.3,
               }}>
-                Пчёлы дотанцевались до упаду
+                {isLegend 
+                  ? 'Легендарный уровень!'
+                  : isWizard 
+                    ? 'Великолепная игра!'
+                    : 'Пчёлы дотанцевались до упаду'}
               </h2>
               
+              {/* Message */}
               <p style={{
                 fontSize: '16px',
                 color: 'rgba(255, 255, 255, 0.9)',
                 marginBottom: '24px',
                 lineHeight: 1.5,
               }}>
-                Попробуйте ещё раз — постройте свою империю мёда и пчёл!
+                {isLegend 
+                  ? '🏆 Здесь будет анонс приза!'
+                  : isWizard 
+                    ? '✨ Ваш уровень — волшебник страны Ос!'
+                    : '🐱 Киса и Ося вас поддерживают! Попробуйте ещё раз!'}
               </p>
               
+              {/* Stats */}
               <div style={{
                 background: 'rgba(0,0,0,0.3)',
                 borderRadius: '16px',
@@ -881,21 +930,30 @@ export default function BeeCallCenter() {
                 className="touch-button"
                 style={{
                   padding: '16px 40px',
-                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                  background: isLegend 
+                    ? 'linear-gradient(135deg, #fbbf24, #eab308)'
+                    : isWizard 
+                      ? 'linear-gradient(135deg, #10b981, #059669)'
+                      : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                   border: 'none',
                   borderRadius: '20px',
                   color: '#1f2937',
                   fontSize: '18px',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(251, 191, 36, 0.5)',
+                  boxShadow: isLegend 
+                    ? '0 4px 30px rgba(251, 191, 36, 0.7)'
+                    : isWizard 
+                      ? '0 4px 20px rgba(16, 185, 129, 0.5)'
+                      : '0 4px 20px rgba(251, 191, 36, 0.5)',
                 }}
               >
                 🔄 Начать заново
               </button>
             </div>
           </div>
-        )}
+          )
+        })()}
         
         {/* Tutorial overlay */}
         {showTutorial && (
