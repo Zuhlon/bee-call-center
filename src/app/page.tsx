@@ -81,7 +81,6 @@ export default function BeeCallCenter() {
   const [particles, setParticles] = useState<Particle[]>([])
   const [screenShake, setScreenShake] = useState(false)
   
-  
   // Busy operators
   const [busyOperators, setBusyOperators] = useState<Set<number>>(new Set())
   
@@ -616,20 +615,6 @@ export default function BeeCallCenter() {
           0% { transform: translateX(50px) scale(0.8); opacity: 0; }
           100% { transform: translateX(0) scale(1); opacity: 1; }
         }
-        @keyframes honeyFlow {
-          0%, 100% { 
-            background-position: 0% 30%;
-          }
-          25% { 
-            background-position: 30% 70%;
-          }
-          50% { 
-            background-position: 100% 50%;
-          }
-          75% { 
-            background-position: 70% 30%;
-          }
-        }
         @keyframes levelUp {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.1); filter: brightness(1.3); }
@@ -659,8 +644,8 @@ export default function BeeCallCenter() {
         }
         
         .custom-scrollbar::-webkit-scrollbar { height: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #fbbf24, #f97316); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(92, 74, 50, 0.1); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: linear-gradient(90deg, #f5c842, #e0a830); border-radius: 10px; }
         
         .touch-button {
           -webkit-tap-highlight-color: transparent;
@@ -684,16 +669,68 @@ export default function BeeCallCenter() {
           animation: shake 0.1s ease-in-out;
         }
         
+        /* Neumorphism styles */
+        .neu-raised {
+          background: linear-gradient(145deg, #e8d5b8, #d4c4a8);
+          box-shadow: 8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc;
+          border-radius: 20px;
+        }
         
+        .neu-inset {
+          background: linear-gradient(145deg, #d4c4a8, #e8d5b8);
+          box-shadow: inset 4px 4px 8px #c9b898, inset -4px -4px 8px #f5e6cc;
+          border-radius: 16px;
+        }
+        
+        .neu-button {
+          background: linear-gradient(145deg, #e8d5b8, #d4c4a8);
+          box-shadow: 6px 6px 12px #c9b898, -6px -6px 12px #f5e6cc;
+          border-radius: 16px;
+          transition: all 0.2s ease;
+        }
+        
+        .neu-button:active {
+          box-shadow: inset 4px 4px 8px #c9b898, inset -4px -4px 8px #f5e6cc;
+        }
+        
+        .neu-button-accent {
+          background: linear-gradient(145deg, #f5d456, #e0b835);
+          box-shadow: 6px 6px 12px #c9b898, -6px -6px 12px #f5e6cc;
+          border-radius: 16px;
+          transition: all 0.2s ease;
+        }
+        
+        .neu-button-accent:active {
+          box-shadow: inset 4px 4px 8px #d4a820, inset -4px -4px 8px #ffe066;
+        }
+        
+        .neu-card {
+          background: linear-gradient(145deg, #e8d5b8, #d4c4a8);
+          box-shadow: 8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc;
+          border-radius: 24px;
+        }
+        
+        .neu-hex-raised {
+          background: linear-gradient(145deg, #f5d456, #e0b835);
+          box-shadow: 4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc;
+        }
+        
+        .neu-hex-busy {
+          background: linear-gradient(145deg, #5bc0de, #46b8da);
+          box-shadow: 4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc;
+        }
+        
+        .neu-hex-empty {
+          background: linear-gradient(145deg, #d4c4a8, #e8d5b8);
+          box-shadow: inset 3px 3px 6px #c9b898, inset -3px -3px 6px #f5e6cc;
+        }
       `}</style>
       
       {/* Main container */}
       <div className={`${screenShake ? 'screen-shake' : ''}`} style={{
         minHeight: '100dvh',
-        background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 20%, #b45309 40%, #92400e 60%, #b45309 80%, #f59e0b 100%)',
-        backgroundSize: '200% 200%',
-        animation: 'honeyFlow 30s ease-in-out infinite',
-        color: 'white',
+        background: '#dcd0b8',
+        color: '#5c4a32',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         display: 'flex',
         flexDirection: 'column',
@@ -728,14 +765,13 @@ export default function BeeCallCenter() {
               top: `${bonus.y}%`,
               width: '60px',
               height: '60px',
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7))',
+              background: 'linear-gradient(145deg, #f5d456, #e0b835)',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '32px',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.3), 0 0 30px rgba(255,255,255,0.5)',
-              border: '3px solid #fbbf24',
+              boxShadow: '6px 6px 12px #c9b898, -6px -6px 12px #f5e6cc, 0 0 20px rgba(245, 200, 66, 0.4)',
               zIndex: 15,
             }}
           >
@@ -748,12 +784,12 @@ export default function BeeCallCenter() {
           position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
           overflow: 'hidden', pointerEvents: 'none', zIndex: 0,
         }}>
-          {[...Array(12)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <div key={i} style={{
               position: 'absolute',
-              width: 15 + Math.random() * 40,
-              height: 15 + Math.random() * 40,
-              background: i % 2 === 0 ? 'rgba(251, 191, 36, 0.12)' : 'rgba(255, 255, 255, 0.06)',
+              width: 20 + Math.random() * 60,
+              height: 20 + Math.random() * 60,
+              background: i % 2 === 0 ? 'rgba(245, 200, 66, 0.08)' : 'rgba(92, 74, 50, 0.04)',
               borderRadius: i % 3 === 0 ? '50%' : '30% 70% 70% 30% / 30% 30% 70% 70%',
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -768,7 +804,7 @@ export default function BeeCallCenter() {
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
             fontSize: '72px', zIndex: 100,
             animation: 'levelUp 0.5s ease-in-out',
-            textShadow: '0 0 30px rgba(255,255,255,0.8)',
+            textShadow: '0 4px 12px rgba(92, 74, 50, 0.3)',
           }}>
             ⬆️
           </div>
@@ -778,18 +814,18 @@ export default function BeeCallCenter() {
         {achievementPopup && (
           <div style={{
             position: 'fixed', bottom: '200px', left: '50%', transform: 'translateX(-50%)',
-            background: 'linear-gradient(135deg, #fbbf24, #f97316)',
+            background: 'linear-gradient(145deg, #f5d456, #e0b835)',
             borderRadius: '24px', padding: '16px 28px',
             display: 'flex', alignItems: 'center', gap: '14px', zIndex: 100,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+            boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
             animation: 'slideIn 0.5s ease-out',
           }}>
             <span style={{ fontSize: '36px' }}>{achievementPopup.icon}</span>
             <div>
-              <div className="graffiti-text" style={{ color: 'white', fontSize: '16px' }}>
+              <div className="graffiti-text" style={{ color: '#5c4a32', fontSize: '16px' }}>
                 🏆 {achievementPopup.name}
               </div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)' }}>
+              <div style={{ fontSize: '13px', color: '#8a7a62' }}>
                 {achievementPopup.description}
               </div>
             </div>
@@ -800,18 +836,17 @@ export default function BeeCallCenter() {
         {spiderVictimBanner && (
           <div style={{
             position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-            background: 'linear-gradient(135deg, #7c3aed, #5b21b6)',
+            background: 'linear-gradient(145deg, #9d8bc4, #8a7ab2)',
             borderRadius: '24px', padding: '24px 32px',
             textAlign: 'center', zIndex: 100,
-            boxShadow: '0 8px 40px rgba(124, 58, 237, 0.6), 0 0 60px rgba(124, 58, 237, 0.4)',
-            border: '3px solid rgba(255,255,255,0.3)',
+            boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
             animation: 'slideIn 0.3s ease-out',
           }}>
             <div style={{ fontSize: '64px', marginBottom: '16px' }}>🕷️</div>
             <div className="graffiti-text" style={{ color: '#fef08a', fontSize: '20px', marginBottom: '8px' }}>
               ВЫ СТАЛИ ЖЕРТВОЙ ПАУКА!
             </div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#ef4444' }}>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: '#d9534f' }}>
               -10 мёда
             </div>
           </div>
@@ -819,39 +854,26 @@ export default function BeeCallCenter() {
         
         {/* Game Over screen */}
         {gameOver && (() => {
-          // Determine game over variant based on level
           const isLegend = level > 20
           const isWizard = level > 10
           
           return (
           <div style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0, 0, 0, 0.9)',
+            background: 'rgba(92, 74, 50, 0.7)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 300,
             padding: '20px',
+            backdropFilter: 'blur(8px)',
           }}>
             <div style={{
-              background: isLegend 
-                ? 'linear-gradient(135deg, #854d0e, #713f12)'
-                : isWizard 
-                  ? 'linear-gradient(135deg, #475569, #1e293b)'
-                  : 'linear-gradient(135deg, #78350f, #451a03)',
+              background: 'linear-gradient(145deg, #e8d5b8, #d4c4a8)',
               borderRadius: '32px',
               padding: '40px 32px',
               maxWidth: '340px',
               width: '100%',
               textAlign: 'center',
-              boxShadow: isLegend
-                ? '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 100px rgba(251, 191, 36, 0.5)'
-                : isWizard
-                  ? '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 80px rgba(16, 185, 129, 0.4)'
-                  : '0 20px 60px rgba(0, 0, 0, 0.7), 0 0 80px rgba(251, 191, 36, 0.2)',
-              border: isLegend 
-                ? '4px solid #fbbf24'
-                : isWizard 
-                  ? '4px solid #10b981'
-                  : '4px solid #fbbf24',
+              boxShadow: '12px 12px 24px #c9b898, -12px -12px 24px #f5e6cc',
             }}>
               {/* Icon/Character - centered */}
               <div style={{ 
@@ -861,13 +883,16 @@ export default function BeeCallCenter() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                borderRadius: '20px',
+                boxShadow: 'inset 6px 6px 12px #c9b898, inset -6px -6px 12px #f5e6cc',
               }}>
                 <img 
                   src={isLegend ? '/trophy_gold_bg.png' : isWizard ? '/trophy_silver_bg.png' : '/bee_kitty_3d.png'}
                   alt={isLegend ? 'Золотой кубок' : isWizard ? 'Серебряный кубок' : 'Пчела-котик'}
                   style={{ 
-                    width: '100%', 
-                    height: '100%', 
+                    width: '90%', 
+                    height: '90%', 
                     objectFit: 'cover',
                     borderRadius: '16px',
                   }} 
@@ -877,7 +902,7 @@ export default function BeeCallCenter() {
               {/* Title */}
               <h2 className="graffiti-text" style={{
                 fontSize: '22px',
-                color: isLegend ? '#fef08a' : isWizard ? '#6ee7b7' : '#fbbf24',
+                color: isLegend ? '#d4a820' : isWizard ? '#5bc0de' : '#e0a830',
                 marginBottom: '16px',
                 lineHeight: 1.3,
               }}>
@@ -891,7 +916,7 @@ export default function BeeCallCenter() {
               {/* Message */}
               <p style={{
                 fontSize: '16px',
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: '#5c4a32',
                 marginBottom: '24px',
                 lineHeight: 1.5,
               }}>
@@ -904,26 +929,27 @@ export default function BeeCallCenter() {
               
               {/* Stats */}
               <div style={{
-                background: 'rgba(0,0,0,0.3)',
+                background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
                 borderRadius: '16px',
                 padding: '16px',
                 marginBottom: '24px',
+                boxShadow: 'inset 4px 4px 8px #c9b898, inset -4px -4px 8px #f5e6cc',
               }}>
-                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', marginBottom: '8px' }}>
+                <div style={{ fontSize: '14px', color: '#8a7a62', marginBottom: '8px' }}>
                   Ваш результат:
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
                   <div>
                     <div style={{ fontSize: '28px' }}>🍯</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700 }}>{totalCreditsEarned.toFixed(1)}</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#5c4a32' }}>{totalCreditsEarned.toFixed(1)}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '28px' }}>⭐</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700 }}>{level}</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#5c4a32' }}>{level}</div>
                   </div>
                   <div>
                     <div style={{ fontSize: '28px' }}>📞</div>
-                    <div style={{ fontSize: '18px', fontWeight: 700 }}>{totalCallsAnswered}</div>
+                    <div style={{ fontSize: '18px', fontWeight: 700, color: '#5c4a32' }}>{totalCallsAnswered}</div>
                   </div>
                 </div>
               </div>
@@ -933,22 +959,14 @@ export default function BeeCallCenter() {
                 className="touch-button"
                 style={{
                   padding: '16px 40px',
-                  background: isLegend 
-                    ? 'linear-gradient(135deg, #fbbf24, #eab308)'
-                    : isWizard 
-                      ? 'linear-gradient(135deg, #10b981, #059669)'
-                      : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                  background: 'linear-gradient(145deg, #f5d456, #e0b835)',
                   border: 'none',
                   borderRadius: '20px',
-                  color: '#1f2937',
+                  color: '#5c4a32',
                   fontSize: '18px',
                   fontWeight: 700,
                   cursor: 'pointer',
-                  boxShadow: isLegend 
-                    ? '0 4px 30px rgba(251, 191, 36, 0.7)'
-                    : isWizard 
-                      ? '0 4px 20px rgba(16, 185, 129, 0.5)'
-                      : '0 4px 20px rgba(251, 191, 36, 0.5)',
+                  boxShadow: '6px 6px 12px #c9b898, -6px -6px 12px #f5e6cc',
                 }}
               >
                 🔄 Начать заново
@@ -962,20 +980,20 @@ export default function BeeCallCenter() {
         {showTutorial && (
           <div style={{
             position: 'fixed', inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
+            background: 'rgba(92, 74, 50, 0.6)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 200,
             padding: '20px',
+            backdropFilter: 'blur(8px)',
           }}>
             <div style={{
-              background: 'linear-gradient(135deg, #1e1b4b, #312e81)',
+              background: 'linear-gradient(145deg, #e8d5b8, #d4c4a8)',
               borderRadius: '32px',
               padding: '32px 28px',
               maxWidth: '340px',
               width: '100%',
               textAlign: 'center',
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5), 0 0 80px rgba(139, 92, 246, 0.3)',
-              border: '3px solid rgba(139, 92, 246, 0.5)',
+              boxShadow: '12px 12px 24px #c9b898, -12px -12px 24px #f5e6cc',
             }}>
               {/* Progress dots */}
               <div style={{
@@ -985,7 +1003,12 @@ export default function BeeCallCenter() {
                   <div key={i} style={{
                     width: '10px', height: '10px',
                     borderRadius: '50%',
-                    background: i === tutorialStep ? '#fbbf24' : i < tutorialStep ? '#22c55e' : 'rgba(255,255,255,0.2)',
+                    background: i === tutorialStep 
+                      ? 'linear-gradient(145deg, #f5d456, #e0b835)' 
+                      : i < tutorialStep 
+                        ? '#22c55e' 
+                        : 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                    boxShadow: i === tutorialStep ? '2px 2px 4px #c9b898, -2px -2px 4px #f5e6cc' : 'none',
                     transition: 'all 0.3s ease',
                   }} />
                 ))}
@@ -1003,7 +1026,7 @@ export default function BeeCallCenter() {
               {/* Title */}
               <h2 className="graffiti-text" style={{
                 fontSize: '22px',
-                color: '#fbbf24',
+                color: '#e0a830',
                 marginBottom: '16px',
               }}>
                 {TUTORIAL_STEPS[tutorialStep].title}
@@ -1013,7 +1036,7 @@ export default function BeeCallCenter() {
               <p style={{
                 fontSize: '16px',
                 lineHeight: 1.6,
-                color: 'rgba(255, 255, 255, 0.9)',
+                color: '#5c4a32',
                 marginBottom: '28px',
               }}>
                 {TUTORIAL_STEPS[tutorialStep].content}
@@ -1028,13 +1051,14 @@ export default function BeeCallCenter() {
                   onClick={closeTutorial}
                   style={{
                     padding: '12px 20px',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    border: '2px solid rgba(255, 255, 255, 0.2)',
+                    background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                    border: 'none',
                     borderRadius: '16px',
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: '#8a7a62',
                     fontSize: '14px',
                     fontWeight: 600,
                     cursor: 'pointer',
+                    boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
                   }}
                 >
                   Пропустить
@@ -1044,14 +1068,14 @@ export default function BeeCallCenter() {
                   className="touch-button"
                   style={{
                     padding: '12px 28px',
-                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    background: 'linear-gradient(145deg, #f5d456, #e0b835)',
                     border: 'none',
                     borderRadius: '16px',
-                    color: '#1f2937',
+                    color: '#5c4a32',
                     fontSize: '15px',
                     fontWeight: 700,
                     cursor: 'pointer',
-                    boxShadow: '0 4px 20px rgba(251, 191, 36, 0.4)',
+                    boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
                   }}
                 >
                   {tutorialStep === TUTORIAL_STEPS.length - 1 ? 'Начать!' : 'Далее'}
@@ -1064,8 +1088,6 @@ export default function BeeCallCenter() {
         {/* Header */}
         <header className="safe-top" style={{
           padding: '12px 16px',
-          background: 'linear-gradient(180deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.1))',
-          backdropFilter: 'blur(10px)',
           position: 'relative', zIndex: 10,
         }}>
           {/* Level & XP bar */}
@@ -1073,22 +1095,30 @@ export default function BeeCallCenter() {
             display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px',
           }}>
             <div className={levelUpEffect ? 'level-up' : ''} style={{
-              background: 'linear-gradient(135deg, #a855f7, #7c3aed)',
+              background: 'linear-gradient(145deg, #c9b898, #b8a788)',
               padding: '6px 12px', borderRadius: '12px',
-              fontWeight: 700, fontSize: '14px',
-              boxShadow: '0 2px 10px rgba(168, 85, 247, 0.5)',
+              fontWeight: 700, fontSize: '14px', color: '#5c4a32',
+              boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
             }}>
               ⭐ Уровень {level}
             </div>
-            <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.2)', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ 
+              flex: 1, 
+              height: '10px', 
+              background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)', 
+              borderRadius: '8px', 
+              overflow: 'hidden',
+              boxShadow: 'inset 2px 2px 4px #c9b898, inset -2px -2px 4px #f5e6cc',
+            }}>
               <div style={{
                 width: `${(xp / xpToNext) * 100}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, #22c55e, #16a34a)',
                 transition: 'width 0.3s ease',
+                borderRadius: '8px',
               }} />
             </div>
-            <div style={{ fontSize: '12px', opacity: 0.8 }}>
+            <div style={{ fontSize: '12px', color: '#8a7a62' }}>
               {xp}/{xpToNext} XP
             </div>
           </div>
@@ -1099,8 +1129,7 @@ export default function BeeCallCenter() {
               <span style={{ fontSize: '28px' }}>🐝</span>
               <h1 className="graffiti-text" style={{
                 fontSize: '18px',
-                background: 'linear-gradient(180deg, #fef08a, #fbbf24)',
-                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                color: '#e0a830',
               }}>
                 МЁдЦентр
               </h1>
@@ -1108,25 +1137,27 @@ export default function BeeCallCenter() {
             
             <div style={{ display: 'flex', gap: '8px' }}>
               <div style={{
-                background: penaltyAnimation ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                background: penaltyAnimation 
+                  ? 'linear-gradient(145deg, #d9534f, #c9302c)' 
+                  : 'linear-gradient(145deg, #f5d456, #e0b835)',
                 padding: '6px 12px', borderRadius: '14px',
                 display: 'flex', alignItems: 'center', gap: '4px',
-                border: '2px solid rgba(255,255,255,0.4)',
+                boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
               }}>
                 <span>🍯</span>
-                <span className="graffiti-text" style={{ fontSize: '16px', color: '#1f2937' }}>
+                <span className="graffiti-text" style={{ fontSize: '16px', color: '#5c4a32' }}>
                   {balance.toFixed(1)}
                 </span>
               </div>
               
               <div style={{
-                background: 'linear-gradient(135deg, #22c55e, #16a34a)',
+                background: 'linear-gradient(145deg, #5bc0de, #46b8da)',
                 padding: '6px 12px', borderRadius: '14px',
                 display: 'flex', alignItems: 'center', gap: '4px',
-                border: '2px solid rgba(255,255,255,0.4)',
+                boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
               }}>
                 <span>📞</span>
-                <span className="graffiti-text" style={{ fontSize: '16px', color: 'white' }}>
+                <span className="graffiti-text" style={{ fontSize: '16px', color: '#fff' }}>
                   {clientQueue.length}
                 </span>
               </div>
@@ -1137,10 +1168,10 @@ export default function BeeCallCenter() {
           {combo > 1 && (
             <div className="combo-pulse" style={{
               position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)',
-              background: 'linear-gradient(135deg, #ef4444, #f97316)',
+              background: 'linear-gradient(145deg, #f5a623, #e08e1b)',
               padding: '4px 16px', borderRadius: '12px',
-              fontSize: '18px', fontWeight: 700, marginTop: '4px',
-              boxShadow: '0 4px 15px rgba(239, 68, 68, 0.5)',
+              fontSize: '18px', fontWeight: 700, marginTop: '4px', color: '#fff',
+              boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
             }}>
               🔥 КОМБО x{combo}! +{combo * 10}%
             </div>
@@ -1150,10 +1181,11 @@ export default function BeeCallCenter() {
           {hasShield && (
             <div style={{
               position: 'absolute', top: '100%', right: '16px',
-              background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+              background: 'linear-gradient(145deg, #5bc0de, #46b8da)',
               padding: '4px 12px', borderRadius: '12px',
-              fontSize: '13px', fontWeight: 600, marginTop: '4px',
+              fontSize: '13px', fontWeight: 600, marginTop: '4px', color: '#fff',
               display: 'flex', alignItems: 'center', gap: '6px',
+              boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
             }}>
               🛡️ Щит: {shieldTimer}с
             </div>
@@ -1170,14 +1202,20 @@ export default function BeeCallCenter() {
         }}>
           {/* Operators grid */}
           <section style={{
-            background: 'rgba(255, 255, 255, 0.15)',
+            background: 'linear-gradient(145deg, #e8d5b8, #d4c4a8)',
             borderRadius: '24px', padding: '14px',
-            border: '3px solid rgba(255, 255, 255, 0.3)',
-            backdropFilter: 'blur(10px)',
+            boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-              <h2 className="graffiti-text" style={{ fontSize: '14px' }}>🐝 Операторы</h2>
-              <span style={{ fontSize: '12px', background: 'rgba(0,0,0,0.2)', padding: '2px 8px', borderRadius: '8px' }}>
+              <h2 className="graffiti-text" style={{ fontSize: '14px', color: '#5c4a32' }}>🐝 Операторы</h2>
+              <span style={{ 
+                fontSize: '12px', 
+                background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)', 
+                padding: '2px 8px', 
+                borderRadius: '8px',
+                color: '#8a7a62',
+                boxShadow: 'inset 2px 2px 4px #c9b898, inset -2px -2px 4px #f5e6cc',
+              }}>
                 {freeOperators}/{operators}
               </span>
             </div>
@@ -1188,10 +1226,12 @@ export default function BeeCallCenter() {
                 return (
                   <div key={i} className={`hex-cell ${isBusy ? '' : 'bee-float'}`} style={{
                     width: '38px', height: '42px',
-                    background: isBusy ? 'linear-gradient(135deg, #06b6d4, #0891b2)' : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    background: isBusy 
+                      ? 'linear-gradient(145deg, #5bc0de, #46b8da)' 
+                      : 'linear-gradient(145deg, #f5d456, #e0b835)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '18px', border: '2px solid rgba(255,255,255,0.4)',
-                    boxShadow: '0 2px 10px rgba(251, 191, 36, 0.4)',
+                    fontSize: '18px',
+                    boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
                   }}>
                     {isBusy ? '📞' : '🐝'}
                   </div>
@@ -1200,8 +1240,8 @@ export default function BeeCallCenter() {
               {[...Array(maxOperators - operators)].map((_, i) => (
                 <div key={`e-${i}`} className="hex-cell" style={{
                   width: '38px', height: '42px',
-                  background: 'rgba(255, 255, 255, 0.1)',
-                  border: '2px dashed rgba(255, 255, 255, 0.2)',
+                  background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                  boxShadow: 'inset 2px 2px 4px #c9b898, inset -2px -2px 4px #f5e6cc',
                 }} />
               ))}
             </div>
@@ -1209,17 +1249,27 @@ export default function BeeCallCenter() {
           
           {/* Queue */}
           <section style={{
-            background: 'rgba(255, 255, 255, 0.15)',
+            background: 'linear-gradient(145deg, #e8d5b8, #d4c4a8)',
             borderRadius: '24px', padding: '14px',
-            border: '3px solid rgba(255, 255, 255, 0.3)',
+            boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
           }}>
-            <h2 className="graffiti-text" style={{ fontSize: '14px', marginBottom: '10px' }}>
+            <h2 className="graffiti-text" style={{ fontSize: '14px', marginBottom: '10px', color: '#5c4a32' }}>
               📨 Входящие <span style={{ opacity: 0.6 }}>⏱️ {Math.max(1.5, 3 - (gameSpeed - 1) * 0.3).toFixed(1)}с</span>
             </h2>
             
             <div className="custom-scrollbar" style={{ display: 'flex', gap: '8px', overflowX: 'auto', minHeight: '50px' }}>
               {clientQueue.length === 0 ? (
-                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.5 }}>
+                <div style={{ 
+                  flex: 1, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  opacity: 0.5,
+                  color: '#8a7a62',
+                  background: 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                  borderRadius: '14px',
+                  boxShadow: 'inset 2px 2px 4px #c9b898, inset -2px -2px 4px #f5e6cc',
+                }}>
                   Ожидание...
                 </div>
               ) : (
@@ -1231,23 +1281,22 @@ export default function BeeCallCenter() {
                     <div key={client.id} className={`slide-in ${isUrgent ? 'hornet-shake' : ''}`} style={{
                       flexShrink: 0, padding: '8px 12px',
                       background: isToxic 
-                        ? 'linear-gradient(135deg, #7c3aed, #5b21b6)'
+                        ? 'linear-gradient(145deg, #9d8bc4, #8a7ab2)'
                         : isUrgent 
-                          ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                          ? 'linear-gradient(145deg, #d9534f, #c9302c)'
                           : client.timeLeft <= 2 
-                            ? 'linear-gradient(135deg, #f97316, #ea580c)' 
-                            : 'linear-gradient(135deg, #22c55e, #16a34a)',
+                            ? 'linear-gradient(145deg, #f5a623, #e08e1b)' 
+                            : 'linear-gradient(145deg, #5cb85c, #4cae4c)',
                       borderRadius: '14px', display: 'flex', alignItems: 'center', gap: '6px',
-                      border: isToxic ? '2px solid rgba(139, 92, 246, 0.8)' : '2px solid rgba(255,255,255,0.4)',
-                      boxShadow: isToxic ? '0 0 15px rgba(139, 92, 246, 0.6)' : undefined,
+                      boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
                     }}>
                       <span style={{ fontSize: '16px' }}>{client.type.emoji}</span>
-                      <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: '#fff' }}>
                         {isToxic ? 'ПАУК!' : client.type.name}
                       </span>
                       <span style={{
-                        background: 'rgba(0,0,0,0.3)', padding: '2px 6px', borderRadius: '6px',
-                        fontSize: '11px', fontWeight: 700,
+                        background: 'rgba(0,0,0,0.2)', padding: '2px 6px', borderRadius: '6px',
+                        fontSize: '11px', fontWeight: 700, color: '#fff',
                       }}>
                         {client.timeLeft.toFixed(1)}с
                       </span>
@@ -1261,16 +1310,17 @@ export default function BeeCallCenter() {
           {/* Hornet alert */}
           {hornetActive && (
             <section className="hornet-shake" style={{
-              background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.9), rgba(185, 28, 28, 0.8))',
+              background: 'linear-gradient(145deg, #d9534f, #c9302c)',
               borderRadius: '24px', padding: '12px 16px',
-              border: '3px solid rgba(255,255,255,0.5)',
               display: 'flex', alignItems: 'center', gap: '12px',
+              boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
             }}>
               <div style={{
                 width: '48px', height: '48px',
-                background: 'linear-gradient(135deg, #fef08a, #fbbf24)',
+                background: 'linear-gradient(145deg, #f5d456, #e0b835)',
                 borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '26px',
+                boxShadow: '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc',
               }}>
                 🦅
               </div>
@@ -1278,7 +1328,7 @@ export default function BeeCallCenter() {
                 <h3 className="graffiti-text" style={{ color: '#fef08a', marginBottom: '2px' }}>
                   ⚠️ ШЕРШЕНЬ!
                 </h3>
-                <p style={{ fontSize: '12px', opacity: 0.9 }}>
+                <p style={{ fontSize: '12px', opacity: 0.9, color: '#fff' }}>
                   {hornetDuration}с • Похищено: {lastCaptured}
                 </p>
               </div>
@@ -1287,42 +1337,49 @@ export default function BeeCallCenter() {
           
           {/* Stats */}
           <section style={{
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'linear-gradient(145deg, #e8d5b8, #d4c4a8)',
             borderRadius: '20px', padding: '12px',
             display: 'flex', justifyContent: 'space-around',
+            boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
           }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px' }}>💰</div>
-              <div className="graffiti-text">{totalCreditsEarned.toFixed(0)}</div>
-              <div style={{ fontSize: '10px', opacity: 0.7 }}>Всего</div>
+              <div className="graffiti-text" style={{ color: '#5c4a32' }}>{totalCreditsEarned.toFixed(0)}</div>
+              <div style={{ fontSize: '10px', color: '#8a7a62' }}>Всего</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px' }}>📞</div>
-              <div className="graffiti-text">{totalCallsAnswered}</div>
-              <div style={{ fontSize: '10px', opacity: 0.7 }}>Звонков</div>
+              <div className="graffiti-text" style={{ color: '#5c4a32' }}>{totalCallsAnswered}</div>
+              <div style={{ fontSize: '10px', color: '#8a7a62' }}>Звонков</div>
             </div>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: '24px' }}>🏆</div>
-              <div className="graffiti-text">{highScore.toFixed(0)}</div>
-              <div style={{ fontSize: '10px', opacity: 0.7 }}>Рекорд</div>
+              <div className="graffiti-text" style={{ color: '#5c4a32' }}>{highScore.toFixed(0)}</div>
+              <div style={{ fontSize: '10px', color: '#8a7a62' }}>Рекорд</div>
             </div>
           </section>
           
           {/* Achievements mini */}
           <section style={{
-            background: 'rgba(255, 255, 255, 0.1)',
+            background: 'linear-gradient(145deg, #e8d5b8, #d4c4a8)',
             borderRadius: '20px', padding: '10px 14px',
             display: 'flex', gap: '8px', flexWrap: 'wrap',
+            boxShadow: '8px 8px 16px #c9b898, -8px -8px 16px #f5e6cc',
           }}>
             {achievements.map(a => (
               <div key={a.id} style={{
                 padding: '6px 10px',
-                background: a.unlocked ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : 'rgba(255,255,255,0.1)',
-                borderRadius: '12px', fontSize: '12px', opacity: a.unlocked ? 1 : 0.4,
+                background: a.unlocked 
+                  ? 'linear-gradient(145deg, #f5d456, #e0b835)' 
+                  : 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                borderRadius: '12px', fontSize: '12px', opacity: a.unlocked ? 1 : 0.5,
                 display: 'flex', alignItems: 'center', gap: '4px',
+                boxShadow: a.unlocked 
+                  ? '4px 4px 8px #c9b898, -4px -4px 8px #f5e6cc'
+                  : 'inset 2px 2px 4px #c9b898, inset -2px -2px 4px #f5e6cc',
               }}>
                 <span>{a.icon}</span>
-                <span className="graffiti-text" style={{ fontSize: '10px', color: a.unlocked ? '#1f2937' : 'white' }}>
+                <span className="graffiti-text" style={{ fontSize: '10px', color: a.unlocked ? '#5c4a32' : '#8a7a62' }}>
                   {a.name}
                 </span>
               </div>
@@ -1334,7 +1391,7 @@ export default function BeeCallCenter() {
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
           padding: '12px 16px',
-          background: 'linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.5))',
+          background: 'linear-gradient(180deg, transparent, rgba(220, 208, 184, 0.95))',
           zIndex: 20,
         }} className="safe-bottom">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -1342,42 +1399,46 @@ export default function BeeCallCenter() {
               className="touch-button" style={{
                 minHeight: '68px', padding: '10px',
                 background: balance >= 10 && operators < maxOperators
-                  ? 'linear-gradient(180deg, #fef08a, #fbbf24, #f59e0b)'
-                  : 'rgba(255, 255, 255, 0.15)',
-                border: '3px solid rgba(255,255,255,0.5)',
+                  ? 'linear-gradient(145deg, #f5d456, #e0b835)'
+                  : 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                border: 'none',
                 borderRadius: '20px',
                 cursor: balance >= 10 && operators < maxOperators ? 'pointer' : 'not-allowed',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                opacity: balance >= 10 && operators < maxOperators ? 1 : 0.4,
+                opacity: balance >= 10 && operators < maxOperators ? 1 : 0.5,
                 transform: hireAnimation ? 'scale(0.95)' : 'scale(1)',
-                boxShadow: balance >= 10 && operators < maxOperators ? '0 4px 20px rgba(251, 191, 36, 0.5)' : 'none',
+                boxShadow: balance >= 10 && operators < maxOperators 
+                  ? '6px 6px 12px #c9b898, -6px -6px 12px #f5e6cc' 
+                  : 'inset 4px 4px 8px #c9b898, inset -4px -4px 8px #f5e6cc',
               }}>
               <span style={{ fontSize: '24px' }}>🐝</span>
-              <span className="graffiti-text" style={{ fontSize: '14px', color: balance >= 10 && operators < maxOperators ? '#1f2937' : 'rgba(255,255,255,0.5)' }}>
+              <span className="graffiti-text" style={{ fontSize: '14px', color: balance >= 10 && operators < maxOperators ? '#5c4a32' : '#8a7a62' }}>
                 НАНЯТЬ
               </span>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>-10 🍯</span>
+              <span style={{ fontSize: '11px', opacity: 0.7, color: '#5c4a32' }}>-10 🍯</span>
             </button>
             
             <button onClick={answerCall} disabled={freeOperators <= 0 || clientQueue.length === 0}
               className="touch-button" style={{
                 minHeight: '68px', padding: '10px',
                 background: freeOperators > 0 && clientQueue.length > 0
-                  ? 'linear-gradient(180deg, #86efac, #22c55e, #16a34a)'
-                  : 'rgba(255, 255, 255, 0.15)',
-                border: '3px solid rgba(255,255,255,0.5)',
+                  ? 'linear-gradient(145deg, #5cb85c, #4cae4c)'
+                  : 'linear-gradient(145deg, #d4c4a8, #e8d5b8)',
+                border: 'none',
                 borderRadius: '20px',
                 cursor: freeOperators > 0 && clientQueue.length > 0 ? 'pointer' : 'not-allowed',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                opacity: freeOperators > 0 && clientQueue.length > 0 ? 1 : 0.4,
+                opacity: freeOperators > 0 && clientQueue.length > 0 ? 1 : 0.5,
                 transform: answerAnimation ? 'scale(0.95)' : 'scale(1)',
-                boxShadow: freeOperators > 0 && clientQueue.length > 0 ? '0 4px 20px rgba(34, 197, 94, 0.5)' : 'none',
+                boxShadow: freeOperators > 0 && clientQueue.length > 0 
+                  ? '6px 6px 12px #c9b898, -6px -6px 12px #f5e6cc' 
+                  : 'inset 4px 4px 8px #c9b898, inset -4px -4px 8px #f5e6cc',
               }}>
               <span style={{ fontSize: '24px' }}>📞</span>
-              <span className="graffiti-text" style={{ fontSize: '14px', color: 'white', textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>
+              <span className="graffiti-text" style={{ fontSize: '14px', color: '#fff', textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>
                 ОТВЕТИТЬ
               </span>
-              <span style={{ fontSize: '11px', opacity: 0.8 }}>+{combo > 1 ? (1 + combo * 0.1).toFixed(1) : '1'} 🍯</span>
+              <span style={{ fontSize: '11px', opacity: 0.9, color: '#fff' }}>+{combo > 1 ? (1 + combo * 0.1).toFixed(1) : '1'} 🍯</span>
             </button>
           </div>
         </div>
