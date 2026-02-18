@@ -853,32 +853,26 @@ export default function BeeCallCenter() {
                   ? '4px solid #10b981'
                   : '4px solid #fbbf24',
             }}>
-              {/* Icon/Character */}
-              {isLegend ? (
-                <div style={{ marginBottom: '20px' }}>
-                  <img 
-                    src="/trophy_gold.png" 
-                    alt="Золотой кубок" 
-                    style={{ width: '120px', height: '120px', objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.8))' }} 
-                  />
-                </div>
-              ) : isWizard ? (
-                <div style={{ marginBottom: '20px' }}>
-                  <img 
-                    src="/trophy_silver.png" 
-                    alt="Серебряный кубок" 
-                    style={{ width: '120px', height: '120px', objectFit: 'contain', filter: 'drop-shadow(0 0 20px rgba(16, 185, 129, 0.8))' }} 
-                  />
-                </div>
-              ) : (
-                <div style={{ marginBottom: '20px' }}>
-                  <img 
-                    src="/bee_kitty.png" 
-                    alt="Пчела-котик" 
-                    style={{ width: '140px', height: '140px', objectFit: 'contain' }} 
-                  />
-                </div>
-              )}
+              {/* Icon/Character - centered */}
+              <div style={{ 
+                width: '180px', 
+                height: '180px', 
+                margin: '0 auto 20px auto',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <img 
+                  src={isLegend ? '/trophy_gold_bg.png' : isWizard ? '/trophy_silver_bg.png' : '/bee_kitty_bg.png'}
+                  alt={isLegend ? 'Золотой кубок' : isWizard ? 'Серебряный кубок' : 'Пчела-котик'}
+                  style={{ 
+                    width: '100%', 
+                    height: '100%', 
+                    objectFit: 'cover',
+                    borderRadius: '16px',
+                  }} 
+                />
+              </div>
               
               {/* Title */}
               <h2 className="graffiti-text" style={{
