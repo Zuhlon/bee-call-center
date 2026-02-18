@@ -863,7 +863,7 @@ export default function BeeCallCenter() {
                 justifyContent: 'center',
               }}>
                 <img 
-                  src={isLegend ? '/trophy_gold_bg.png' : isWizard ? '/trophy_silver_bg.png' : '/bee_kitty_bg.png'}
+                  src={isLegend ? '/trophy_gold_bg.png' : isWizard ? '/trophy_silver_bg.png' : '/bee_kitty_3d.png'}
                   alt={isLegend ? 'Золотой кубок' : isWizard ? 'Серебряный кубок' : 'Пчела-котик'}
                   style={{ 
                     width: '100%', 
