@@ -55,7 +55,7 @@ interface Particle {
 
 export default function BeeCallCenter() {
   // Game state
-  const [balance, setBalance] = useState(5)
+  const [balance, setBalance] = useState(15)
   const [operators, setOperators] = useState(3)
   const [maxOperators] = useState(12)
   const [clientQueue, setClientQueue] = useState<Client[]>([])
@@ -125,14 +125,14 @@ export default function BeeCallCenter() {
 
   // Check for game over - no bees and no honey to hire
   useEffect(() => {
-    if (operators === 0 && balance < 1 && !showTutorial) {
+    if (operators === 0 && balance < 10 && !showTutorial) {
       setGameOver(true)
     }
   }, [operators, balance, showTutorial])
 
   // Restart game
   const restartGame = () => {
-    setBalance(5)
+    setBalance(15)
     setOperators(3)
     setClientQueue([])
     setHornetActive(false)
@@ -196,7 +196,7 @@ export default function BeeCallCenter() {
     },
     {
       title: '🐝 Нанимайте пчёл',
-      content: 'Нажмите НАНЯТЬ, чтобы добавить новую пчелу. Стоимость: 1 мёд. Максимум 12 пчёл!',
+      content: 'Нажмите НАНЯТЬ, чтобы добавить новую пчелу. Стоимость: 10 мёда. Максимум 12 пчёл!',
       emoji: '🐝',
     },
     {
@@ -510,9 +510,9 @@ export default function BeeCallCenter() {
 
   // Hire bee
   const hireBee = useCallback(() => {
-    if (balance >= 1 && operators < maxOperators) {
+    if (balance >= 10 && operators < maxOperators) {
       setHireAnimation(true)
-      setBalance(prev => prev - 1)
+      setBalance(prev => prev - 10)
       setOperators(prev => Math.min(prev + 1, maxOperators))
       spawnParticles(30, 70, '🐝', 5)
       addXp(1)
@@ -588,7 +588,7 @@ export default function BeeCallCenter() {
     setTotalCallsAnswered(prev => prev + 1)
     
     // Effects
-    spawnParticles(70, 50, '⭐', 3)
+    spawnParticles(70, 50, '🍯', 3)
     // Visual feedback for success
     
     addXp(2)
@@ -1335,25 +1335,25 @@ export default function BeeCallCenter() {
           zIndex: 20,
         }} className="safe-bottom">
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <button onClick={hireBee} disabled={balance < 1 || operators >= maxOperators}
+            <button onClick={hireBee} disabled={balance < 10 || operators >= maxOperators}
               className="touch-button" style={{
                 minHeight: '68px', padding: '10px',
-                background: balance >= 1 && operators < maxOperators
+                background: balance >= 10 && operators < maxOperators
                   ? 'linear-gradient(180deg, #fef08a, #fbbf24, #f59e0b)'
                   : 'rgba(255, 255, 255, 0.15)',
                 border: '3px solid rgba(255,255,255,0.5)',
                 borderRadius: '20px',
-                cursor: balance >= 1 && operators < maxOperators ? 'pointer' : 'not-allowed',
+                cursor: balance >= 10 && operators < maxOperators ? 'pointer' : 'not-allowed',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px',
-                opacity: balance >= 1 && operators < maxOperators ? 1 : 0.4,
+                opacity: balance >= 10 && operators < maxOperators ? 1 : 0.4,
                 transform: hireAnimation ? 'scale(0.95)' : 'scale(1)',
-                boxShadow: balance >= 1 && operators < maxOperators ? '0 4px 20px rgba(251, 191, 36, 0.5)' : 'none',
+                boxShadow: balance >= 10 && operators < maxOperators ? '0 4px 20px rgba(251, 191, 36, 0.5)' : 'none',
               }}>
               <span style={{ fontSize: '24px' }}>🐝</span>
-              <span className="graffiti-text" style={{ fontSize: '14px', color: balance >= 1 && operators < maxOperators ? '#1f2937' : 'rgba(255,255,255,0.5)' }}>
+              <span className="graffiti-text" style={{ fontSize: '14px', color: balance >= 10 && operators < maxOperators ? '#1f2937' : 'rgba(255,255,255,0.5)' }}>
                 НАНЯТЬ
               </span>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>-1 ⭐</span>
+              <span style={{ fontSize: '11px', opacity: 0.7 }}>-10 🍯</span>
             </button>
             
             <button onClick={answerCall} disabled={freeOperators <= 0 || clientQueue.length === 0}
@@ -1374,7 +1374,7 @@ export default function BeeCallCenter() {
               <span className="graffiti-text" style={{ fontSize: '14px', color: 'white', textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>
                 ОТВЕТИТЬ
               </span>
-              <span style={{ fontSize: '11px', opacity: 0.8 }}>+{combo > 1 ? (1 + combo * 0.1).toFixed(1) : '1'} ⭐</span>
+              <span style={{ fontSize: '11px', opacity: 0.8 }}>+{combo > 1 ? (1 + combo * 0.1).toFixed(1) : '1'} 🍯</span>
             </button>
           </div>
         </div>
